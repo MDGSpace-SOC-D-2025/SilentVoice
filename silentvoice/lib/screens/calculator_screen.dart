@@ -39,30 +39,55 @@ class CalculatorScreen extends StatelessWidget {
                   crossAxisSpacing: 12,
                   mainAxisSpacing: 12,
                   children: const [
-                    Text("⌫"),
-                    Text("AC"),
-                    Text("+"),
-                    Text("-"),
+                    CalculatorButton(
+                      label: "⌫",
+                      backgroundColor: Color.fromARGB(255, 210, 203, 190),
+                    ),
+                    CalculatorButton(
+                      label: "AC",
+                      backgroundColor: Color.fromARGB(255, 210, 203, 190),
+                    ),
 
-                    Text("7"),
-                    Text("8"),
-                    Text("9"),
-                    Text("×"),
+                    CalculatorButton(
+                      label: "+",
+                      backgroundColor: Color.fromARGB(255, 210, 203, 190),
+                    ),
+                    CalculatorButton(
+                      label: "−",
+                      backgroundColor: Color.fromARGB(255, 210, 203, 190),
+                    ),
 
-                    Text("4"),
-                    Text("5"),
-                    Text("6"),
-                    Text("÷"),
+                    CalculatorButton(label: "7"),
+                    CalculatorButton(label: "8"),
+                    CalculatorButton(label: "9"),
+                    CalculatorButton(
+                      label: "×",
+                      backgroundColor: Color.fromARGB(255, 235, 177, 70),
+                    ),
 
-                    Text("1"),
-                    Text("2"),
-                    Text("3"),
-                    Text(""),
+                    CalculatorButton(label: "4"),
+                    CalculatorButton(label: "5"),
+                    CalculatorButton(label: "6"),
+                    CalculatorButton(
+                      label: "÷",
+                      backgroundColor: Color.fromARGB(255, 235, 177, 70),
+                    ),
 
-                    Text("±"),
-                    Text("0"),
-                    Text("."),
-                    Text("="),
+                    CalculatorButton(label: "1"),
+                    CalculatorButton(label: "2"),
+                    CalculatorButton(label: "3"),
+                    CalculatorButton(
+                      label: "( )",
+                      backgroundColor: Color.fromARGB(255, 235, 177, 70),
+                    ),
+
+                    CalculatorButton(label: "±"),
+                    CalculatorButton(label: "0"),
+                    CalculatorButton(label: "."),
+                    CalculatorButton(
+                      label: "=",
+                      backgroundColor: Color.fromARGB(255, 235, 177, 70),
+                    ),
                   ],
 
                   // buttons will go here
@@ -71,6 +96,30 @@ class CalculatorScreen extends StatelessWidget {
             ),
           ],
         ),
+      ),
+    );
+  }
+}
+
+class CalculatorButton extends StatelessWidget {
+  final String label;
+  final Color backgroundColor;
+
+  const CalculatorButton({
+    super.key,
+    required this.label,
+    this.backgroundColor = Colors.white,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      decoration: BoxDecoration(color: backgroundColor, shape: BoxShape.circle),
+      alignment: Alignment.center,
+
+      child: Text(
+        label,
+        style: const TextStyle(fontSize: 22, fontWeight: FontWeight.w600),
       ),
     );
   }
