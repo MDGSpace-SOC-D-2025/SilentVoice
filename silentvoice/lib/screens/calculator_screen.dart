@@ -18,10 +18,25 @@ class _CalculatorScreenState extends State<CalculatorScreen> {
         if (expression.isNotEmpty) {
           expression = expression.substring(0, expression.length - 1);
         }
+      } else if (value == '±') {
+        toggleSign();
+      } else if (value == '( )') {
+        handleParentheses();
       } else {
         expression += value;
       }
     });
+  }
+
+  void handleParentheses() {
+    int openCount = '('.allMatches(expression).length;
+    int closeCount = ')'.allMatches(expression).length;
+
+    if (openCount > closeCount) {
+      expression += ')';
+    } else {
+      expression += '(';
+    }
   }
 
   @override
@@ -132,7 +147,7 @@ class _CalculatorScreenState extends State<CalculatorScreen> {
                     ),
                     CalculatorButton(
                       label: "( )",
-                      onTap: () => onButtonPressed("()"),
+                      onTap: () => onButtonPressed("( )"),
                       backgroundColor: Color.fromARGB(255, 235, 177, 70),
                     ),
 
@@ -161,6 +176,31 @@ class _CalculatorScreenState extends State<CalculatorScreen> {
         ),
       ),
     );
+  }
+
+  void toggleSign() {
+    if (expression.isEmpty) return;
+
+    int lastplus = expression.lastIndexOf('+');
+    int lastminus = expression.lastIndexOf('-');
+    int lastmultiply = expression.lastIndexOf('×');
+    int lastDivide = expression.lastIndexOf('÷');
+
+    int lastOperatorIndex = lastplus;
+    if (lastminus > lastOperatorIndex) lastOperatorIndex = lastminus;
+    if (lastmultiply > lastOperatorIndex) lastOperatorIndex = lastmultiply;
+    if (lastDivide > lastOperatorIndex) lastOperatorIndex = lastDivide;
+
+    String before = expression.substring(0, lastOperatorIndex + 1);
+    String currentNumber = expression.substring(lastOperatorIndex + 1);
+
+    if (currentNumber.startsWith('-')) {
+      currentNumber = currentNumber.substring(1);
+    } else {
+      currentNumber = '-$currentNumber';
+    }
+
+    expression = before + currentNumber;
   }
 }
 
