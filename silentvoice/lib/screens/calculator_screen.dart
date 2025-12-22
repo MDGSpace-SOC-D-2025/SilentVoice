@@ -22,6 +22,10 @@ class _CalculatorScreenState extends State<CalculatorScreen> {
         toggleSign();
       } else if (value == '( )') {
         handleParentheses();
+      } else if (isOperator(value)) {
+        handleOperator(value);
+      } else if (value == '=') {
+        calculateResult();
       } else {
         expression += value;
       }
@@ -37,6 +41,107 @@ class _CalculatorScreenState extends State<CalculatorScreen> {
     } else {
       expression += '(';
     }
+  }
+
+  void handleOperator(String op) {
+    if (expression.isEmpty) {
+      // Allow minus for negative numbers
+      if (op == '-') {
+        expression = '-';
+      }
+      return;
+    }
+
+    String lastChar = expression[expression.length - 1];
+
+    // If last char is already an operator, replace it
+    if (isOperator(lastChar)) {
+      expression = expression.substring(0, expression.length - 1) + op;
+    }
+    // If last char is '(' → do nothing
+    else if (lastChar == '(') {
+      return;
+    } else {
+      expression += op;
+    }
+  }
+
+  bool isOperator(String ch) {
+    return ch == '+' || ch == '-' || ch == '×' || ch == '÷';
+  }
+
+  void calculateResult() {
+    if (expression.isEmpty) return;
+
+    try {
+      String exp = expression;
+
+      // Replace calculator symbols with Dart operators
+      exp = exp.replaceAll('×', '*');
+      exp = exp.replaceAll('÷', '/');
+
+      double eval = _evaluateExpression(exp);
+
+      result = eval.toString();
+    } catch (e) {
+      result = 'Error';
+    }
+  }
+
+  double _evaluateExpression(String exp) {
+    // Remove spaces
+    exp = exp.replaceAll(' ', '');
+
+    List<double> numbers = [];
+    List<String> operators = [];
+
+    int i = 0;
+
+    while (i < exp.length) {
+      // Parse number (including negatives)
+      if (isDigit(exp[i]) ||
+          exp[i] == '-' && (i == 0 || isOperator(exp[i - 1]))) {
+        int start = i;
+        i++;
+        while (i < exp.length && (isDigit(exp[i]) || exp[i] == '.')) {
+          i++;
+        }
+        numbers.add(double.parse(exp.substring(start, i)));
+      } else {
+        operators.add(exp[i]);
+        i++;
+      }
+    }
+
+    // Handle * and /
+    for (int i = 0; i < operators.length; i++) {
+      if (operators[i] == '*' || operators[i] == '/') {
+        double a = numbers[i];
+        double b = numbers[i + 1];
+        double res = operators[i] == '*' ? a * b : a / b;
+
+        numbers[i] = res;
+        numbers.removeAt(i + 1);
+        operators.removeAt(i);
+        i--;
+      }
+    }
+
+    // Handle + and -
+    double finalResult = numbers[0];
+    for (int i = 0; i < operators.length; i++) {
+      if (operators[i] == '+') {
+        finalResult += numbers[i + 1];
+      } else {
+        finalResult -= numbers[i + 1];
+      }
+    }
+
+    return finalResult;
+  }
+
+  bool isDigit(String ch) {
+    return ch.codeUnitAt(0) >= 48 && ch.codeUnitAt(0) <= 57;
   }
 
   @override
@@ -164,7 +269,7 @@ class _CalculatorScreenState extends State<CalculatorScreen> {
                       onTap: () => onButtonPressed("."),
                     ),
                     CalculatorButton(
-                      onTap: () => onButtonPressed("()"),
+                      onTap: () => onButtonPressed("="),
                       label: "=",
                       backgroundColor: Color.fromARGB(255, 235, 177, 70),
                     ),
