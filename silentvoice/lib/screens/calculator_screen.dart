@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:silentvoice/screens/role_selection_screen.dart';
 
 class CalculatorScreen extends StatefulWidget {
   const CalculatorScreen({super.key});
@@ -45,7 +46,6 @@ class _CalculatorScreenState extends State<CalculatorScreen> {
 
   void handleOperator(String op) {
     if (expression.isEmpty) {
-      // Allow minus for negative numbers
       if (op == '-') {
         expression = '-';
       }
@@ -54,7 +54,6 @@ class _CalculatorScreenState extends State<CalculatorScreen> {
 
     String lastChar = expression[expression.length - 1];
 
-    // If last char is already an operator, replace it
     if (isOperator(lastChar)) {
       expression = expression.substring(0, expression.length - 1) + op;
     }
@@ -81,7 +80,6 @@ class _CalculatorScreenState extends State<CalculatorScreen> {
       exp = exp.replaceAll('÷', '/');
 
       double eval = _evaluateExpression(exp);
-
       result = eval.toString();
     } catch (e) {
       result = 'Error';
@@ -89,16 +87,13 @@ class _CalculatorScreenState extends State<CalculatorScreen> {
   }
 
   double _evaluateExpression(String exp) {
-    // Remove spaces
     exp = exp.replaceAll(' ', '');
 
     List<double> numbers = [];
     List<String> operators = [];
-
     int i = 0;
 
     while (i < exp.length) {
-      // Parse number (including negatives)
       if (isDigit(exp[i]) ||
           exp[i] == '-' && (i == 0 || isOperator(exp[i - 1]))) {
         int start = i;
@@ -113,7 +108,6 @@ class _CalculatorScreenState extends State<CalculatorScreen> {
       }
     }
 
-    // Handle * and /
     for (int i = 0; i < operators.length; i++) {
       if (operators[i] == '*' || operators[i] == '/') {
         double a = numbers[i];
@@ -127,7 +121,6 @@ class _CalculatorScreenState extends State<CalculatorScreen> {
       }
     }
 
-    // Handle + and -
     double finalResult = numbers[0];
     for (int i = 0; i < operators.length; i++) {
       if (operators[i] == '+') {
@@ -142,145 +135,6 @@ class _CalculatorScreenState extends State<CalculatorScreen> {
 
   bool isDigit(String ch) {
     return ch.codeUnitAt(0) >= 48 && ch.codeUnitAt(0) <= 57;
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      body: SafeArea(
-        child: Column(
-          children: [
-            // DISPLAY AREA
-            Expanded(
-              flex: 4,
-              child: Container(
-                width: double.infinity,
-                padding: const EdgeInsets.all(10),
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.end,
-                  crossAxisAlignment: CrossAxisAlignment.end,
-                  children: [
-                    Text(expression, style: TextStyle(fontSize: 22)),
-                    SizedBox(height: 8),
-                    Text(result, style: TextStyle(fontSize: 58)),
-                  ],
-                ),
-              ),
-            ),
-
-            // BUTTON AREA
-            Expanded(
-              flex: 7,
-              child: Container(
-                width: double.infinity,
-                color: const Color.fromARGB(255, 231, 229, 229),
-                padding: const EdgeInsets.all(12),
-                child: GridView.count(
-                  crossAxisCount: 4,
-                  crossAxisSpacing: 12,
-                  mainAxisSpacing: 12,
-                  children: [
-                    CalculatorButton(
-                      label: "⌫",
-                      onTap: () => onButtonPressed("⌫"),
-
-                      backgroundColor: Color.fromARGB(255, 210, 203, 190),
-                    ),
-                    CalculatorButton(
-                      label: "AC",
-                      onTap: () => onButtonPressed("AC"),
-                      backgroundColor: Color.fromARGB(255, 210, 203, 190),
-                    ),
-                    CalculatorButton(
-                      label: "+",
-                      onTap: () => onButtonPressed("+"),
-                      backgroundColor: Color.fromARGB(255, 210, 203, 190),
-                    ),
-                    CalculatorButton(
-                      label: "−",
-                      onTap: () => onButtonPressed("-"),
-                      backgroundColor: Color.fromARGB(255, 210, 203, 190),
-                    ),
-
-                    CalculatorButton(
-                      label: "7",
-                      onTap: () => onButtonPressed("7"),
-                    ),
-                    CalculatorButton(
-                      label: "8",
-                      onTap: () => onButtonPressed("8"),
-                    ),
-                    CalculatorButton(
-                      label: "9",
-                      onTap: () => onButtonPressed("9"),
-                    ),
-                    CalculatorButton(
-                      label: "×",
-                      backgroundColor: Color.fromARGB(255, 235, 177, 70),
-                      onTap: () => onButtonPressed("×"),
-                    ),
-
-                    CalculatorButton(
-                      label: "4",
-                      onTap: () => onButtonPressed("4"),
-                    ),
-                    CalculatorButton(
-                      label: "5",
-                      onTap: () => onButtonPressed("5"),
-                    ),
-                    CalculatorButton(
-                      label: "6",
-                      onTap: () => onButtonPressed("6"),
-                    ),
-                    CalculatorButton(
-                      label: "÷",
-                      onTap: () => onButtonPressed("÷"),
-                      backgroundColor: Color.fromARGB(255, 235, 177, 70),
-                    ),
-
-                    CalculatorButton(
-                      label: "1",
-                      onTap: () => onButtonPressed("1"),
-                    ),
-                    CalculatorButton(
-                      label: "2",
-                      onTap: () => onButtonPressed("2"),
-                    ),
-                    CalculatorButton(
-                      label: "3",
-                      onTap: () => onButtonPressed("3"),
-                    ),
-                    CalculatorButton(
-                      label: "( )",
-                      onTap: () => onButtonPressed("( )"),
-                      backgroundColor: Color.fromARGB(255, 235, 177, 70),
-                    ),
-
-                    CalculatorButton(
-                      label: "±",
-                      onTap: () => onButtonPressed("±"),
-                    ),
-                    CalculatorButton(
-                      label: "0",
-                      onTap: () => onButtonPressed("0"),
-                    ),
-                    CalculatorButton(
-                      label: ".",
-                      onTap: () => onButtonPressed("."),
-                    ),
-                    CalculatorButton(
-                      onTap: () => onButtonPressed("="),
-                      label: "=",
-                      backgroundColor: Color.fromARGB(255, 235, 177, 70),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
   }
 
   void toggleSign() {
@@ -307,6 +161,210 @@ class _CalculatorScreenState extends State<CalculatorScreen> {
 
     expression = before + currentNumber;
   }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      body: SafeArea(
+        child: Stack(
+          children: [
+            // 🔹 MAIN CALCULATOR UI (UNCHANGED)
+            Column(
+              children: [
+                // DISPLAY AREA
+                Expanded(
+                  flex: 4,
+                  child: Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.all(10),
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.end,
+                      crossAxisAlignment: CrossAxisAlignment.end,
+                      children: [
+                        Text(expression, style: const TextStyle(fontSize: 22)),
+                        const SizedBox(height: 8),
+                        Text(result, style: const TextStyle(fontSize: 58)),
+                      ],
+                    ),
+                  ),
+                ),
+
+                // BUTTON AREA
+                Expanded(
+                  flex: 7,
+                  child: Container(
+                    width: double.infinity,
+                    color: const Color.fromARGB(255, 231, 229, 229),
+                    padding: const EdgeInsets.all(12),
+                    child: GridView.count(
+                      crossAxisCount: 4,
+                      crossAxisSpacing: 12,
+                      mainAxisSpacing: 12,
+                      children: [
+                        CalculatorButton(
+                          label: "⌫",
+                          onTap: () => onButtonPressed("⌫"),
+                          backgroundColor: const Color.fromARGB(
+                            255,
+                            210,
+                            203,
+                            190,
+                          ),
+                        ),
+                        CalculatorButton(
+                          label: "AC",
+                          onTap: () => onButtonPressed("AC"),
+                          backgroundColor: const Color.fromARGB(
+                            255,
+                            210,
+                            203,
+                            190,
+                          ),
+                        ),
+                        CalculatorButton(
+                          label: "+",
+                          onTap: () => onButtonPressed("+"),
+                          backgroundColor: const Color.fromARGB(
+                            255,
+                            210,
+                            203,
+                            190,
+                          ),
+                        ),
+                        CalculatorButton(
+                          label: "−",
+                          onTap: () => onButtonPressed("-"),
+                          backgroundColor: const Color.fromARGB(
+                            255,
+                            210,
+                            203,
+                            190,
+                          ),
+                        ),
+                        CalculatorButton(
+                          label: "7",
+                          onTap: () => onButtonPressed("7"),
+                        ),
+                        CalculatorButton(
+                          label: "8",
+                          onTap: () => onButtonPressed("8"),
+                        ),
+                        CalculatorButton(
+                          label: "9",
+                          onTap: () => onButtonPressed("9"),
+                        ),
+                        CalculatorButton(
+                          label: "×",
+                          onTap: () => onButtonPressed("×"),
+                          backgroundColor: const Color.fromARGB(
+                            255,
+                            235,
+                            177,
+                            70,
+                          ),
+                        ),
+                        CalculatorButton(
+                          label: "4",
+                          onTap: () => onButtonPressed("4"),
+                        ),
+                        CalculatorButton(
+                          label: "5",
+                          onTap: () => onButtonPressed("5"),
+                        ),
+                        CalculatorButton(
+                          label: "6",
+                          onTap: () => onButtonPressed("6"),
+                        ),
+                        CalculatorButton(
+                          label: "÷",
+                          onTap: () => onButtonPressed("÷"),
+                          backgroundColor: const Color.fromARGB(
+                            255,
+                            235,
+                            177,
+                            70,
+                          ),
+                        ),
+                        CalculatorButton(
+                          label: "1",
+                          onTap: () => onButtonPressed("1"),
+                        ),
+                        CalculatorButton(
+                          label: "2",
+                          onTap: () => onButtonPressed("2"),
+                        ),
+                        CalculatorButton(
+                          label: "3",
+                          onTap: () => onButtonPressed("3"),
+                        ),
+                        CalculatorButton(
+                          label: "( )",
+                          onTap: () => onButtonPressed("( )"),
+                          backgroundColor: const Color.fromARGB(
+                            255,
+                            235,
+                            177,
+                            70,
+                          ),
+                        ),
+                        CalculatorButton(
+                          label: "±",
+                          onTap: () => onButtonPressed("±"),
+                        ),
+                        CalculatorButton(
+                          label: "0",
+                          onTap: () => onButtonPressed("0"),
+                        ),
+                        CalculatorButton(
+                          label: ".",
+                          onTap: () => onButtonPressed("."),
+                        ),
+                        CalculatorButton(
+                          label: "=",
+                          onTap: () => onButtonPressed("="),
+                          backgroundColor: const Color.fromARGB(
+                            255,
+                            235,
+                            177,
+                            70,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ],
+            ),
+
+            // THREE-DOT POPUP ICON
+            Positioned(
+              top: 10,
+              left: 10,
+              child: PopupMenuButton<String>(
+                icon: const Icon(Icons.more_vert, color: Colors.grey, size: 22),
+                onSelected: (value) {
+                  if (value == 'lock') {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => const RoleSelectionScreen(),
+                      ),
+                    );
+                  }
+                },
+
+                itemBuilder: (context) => const [
+                  PopupMenuItem(value: 'lock', child: Text('Enable App Lock')),
+                  PopupMenuItem(value: 'clear', child: Text('Clear History')),
+                  PopupMenuItem(value: 'about', child: Text('About')),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
 }
 
 class CalculatorButton extends StatelessWidget {
@@ -332,7 +390,6 @@ class CalculatorButton extends StatelessWidget {
           shape: BoxShape.circle,
         ),
         alignment: Alignment.center,
-
         child: Text(
           label,
           style: const TextStyle(fontSize: 22, fontWeight: FontWeight.w600),
