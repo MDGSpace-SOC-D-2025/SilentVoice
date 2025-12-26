@@ -1,7 +1,13 @@
 import 'package:flutter/material.dart';
+import 'package:silentvoice/screens/calculator_screen.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+
+enum PinRole { user, helper }
 
 class UserPinScreen extends StatefulWidget {
-  const UserPinScreen({super.key});
+  final PinRole role;
+  const UserPinScreen({super.key, required this.role});
+
   @override
   State<UserPinScreen> createState() => _UserPinScreenState();
 }
@@ -9,6 +15,27 @@ class UserPinScreen extends StatefulWidget {
 class _UserPinScreenState extends State<UserPinScreen> {
   String pin = '';
   String confirmPin = '';
+  Future<void> onSavePressed() async {
+    final prefs = await SharedPreferences.getInstance();
+
+    // Mark app lock as enabled
+    await prefs.setBool('isAppLockEnabled', true);
+    if (widget.role == PinRole.user) {
+      await prefs.setString('userPin', pin); // TEMP
+    } else {
+      await prefs.setString('helperPin', pin);
+      await prefs.setBool('isHelperSetupComplete', true);
+    }
+    // SAFETY CHECK
+    if (!mounted) return;
+
+    // Go back to calculator
+    Navigator.pushAndRemoveUntil(
+      context,
+      MaterialPageRoute(builder: (_) => const CalculatorScreen()),
+      (route) => false,
+    );
+  }
 
   bool get isValid {
     return pin.length >= 4 && pin == confirmPin;
@@ -68,7 +95,7 @@ class _UserPinScreenState extends State<UserPinScreen> {
             const SizedBox(height: 16),
 
             const Text(
-              'ⓘ Used to protect app settings\nⓘ If you forget this PIN, data cannot be recovered',
+              'ⓘ If you forget this PIN, data cannot be recovered',
               style: TextStyle(
                 fontSize: 13,
                 color: Color.fromARGB(255, 134, 133, 133),
@@ -80,7 +107,7 @@ class _UserPinScreenState extends State<UserPinScreen> {
             SizedBox(
               width: double.infinity,
               child: ElevatedButton(
-                onPressed: isValid ? () {} : null,
+                onPressed: isValid ? onSavePressed : null,
                 child: const Text('Save'),
               ),
             ),
