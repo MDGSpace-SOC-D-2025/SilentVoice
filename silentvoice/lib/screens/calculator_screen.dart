@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:silentvoice/screens/role_selection_screen.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:silentvoice/screens/hidden_dsahboard_screen.dart';
+import 'package:silentvoice/screens/helper_dashboard_screen.dart';
 
 class CalculatorScreen extends StatefulWidget {
   const CalculatorScreen({super.key});
@@ -10,6 +13,67 @@ class CalculatorScreen extends StatefulWidget {
 class _CalculatorScreenState extends State<CalculatorScreen> {
   String expression = '';
   String result = '0';
+
+  bool isAppLockEnabled = false;
+  String? userPin;
+  String? helperPin;
+
+  @override
+  void initState() {
+    super.initState();
+    loadAppLockStatus();
+  }
+
+  Future<void> loadAppLockStatus() async {
+    final prefs = await SharedPreferences.getInstance();
+    final enabled = prefs.getBool('isAppLockEnabled') ?? false;
+    final upin = prefs.getString('userPin');
+    final hpin = prefs.getString('helperPin');
+
+    if (!mounted) return;
+
+    setState(() {
+      isAppLockEnabled = enabled;
+      userPin = upin;
+      helperPin = hpin;
+    });
+  }
+
+  void handleEquals() {
+    if (isAppLockEnabled) {
+      if (userPin != null && expression == userPin) {
+        openUserDashboard();
+        return;
+      }
+
+      if (helperPin != null && expression == helperPin) {
+        openHelperDashboard();
+        return;
+      }
+    }
+    calculateResult();
+  }
+
+  void openUserDashboard() {
+    if (!mounted) return;
+
+    Navigator.pushAndRemoveUntil(
+      context,
+      MaterialPageRoute(builder: (_) => const HiddenDashboardScreen()),
+      (route) => false,
+    );
+  }
+
+  void openHelperDashboard() {
+    if (!mounted) return;
+
+    Navigator.pushAndRemoveUntil(
+      context,
+      MaterialPageRoute(builder: (_) => const HelperDashboardScreen()),
+      (route) => false,
+    );
+  }
+
   void onButtonPressed(String value) {
     setState(() {
       if (value == 'AC') {
@@ -26,7 +90,7 @@ class _CalculatorScreenState extends State<CalculatorScreen> {
       } else if (isOperator(value)) {
         handleOperator(value);
       } else if (value == '=') {
-        calculateResult();
+        handleEquals();
       } else {
         expression += value;
       }
@@ -337,29 +401,37 @@ class _CalculatorScreenState extends State<CalculatorScreen> {
             ),
 
             // THREE-DOT POPUP ICON
-            Positioned(
-              top: 10,
-              left: 10,
-              child: PopupMenuButton<String>(
-                icon: const Icon(Icons.more_vert, color: Colors.grey, size: 22),
-                onSelected: (value) {
-                  if (value == 'lock') {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (_) => const RoleSelectionScreen(),
-                      ),
-                    );
-                  }
-                },
+            if (!isAppLockEnabled)
+              Positioned(
+                top: 10,
+                left: 10,
+                child: PopupMenuButton<String>(
+                  icon: const Icon(
+                    Icons.more_vert,
+                    color: Colors.grey,
+                    size: 22,
+                  ),
+                  onSelected: (value) {
+                    if (value == 'lock') {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) => const RoleSelectionScreen(),
+                        ),
+                      );
+                    }
+                  },
 
-                itemBuilder: (context) => const [
-                  PopupMenuItem(value: 'lock', child: Text('Enable App Lock')),
-                  PopupMenuItem(value: 'clear', child: Text('Clear History')),
-                  PopupMenuItem(value: 'about', child: Text('About')),
-                ],
+                  itemBuilder: (context) => const [
+                    PopupMenuItem(
+                      value: 'lock',
+                      child: Text('Enable App Lock'),
+                    ),
+                    PopupMenuItem(value: 'clear', child: Text('Clear History')),
+                    PopupMenuItem(value: 'about', child: Text('About')),
+                  ],
+                ),
               ),
-            ),
           ],
         ),
       ),
