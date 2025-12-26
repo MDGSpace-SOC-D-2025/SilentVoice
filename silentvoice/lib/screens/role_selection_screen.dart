@@ -18,7 +18,7 @@ class _RoleSelectionScreenState extends State<RoleSelectionScreen> {
     if (selectedRole == 'USER') {
       Navigator.push(
         context,
-        MaterialPageRoute(builder: (_) => UserPinScreen()),
+        MaterialPageRoute(builder: (_) => UserPinScreen(role: PinRole.user)),
       );
     } else if (selectedRole == 'HELPER') {
       Navigator.push(
