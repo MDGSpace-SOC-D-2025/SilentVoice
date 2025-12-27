@@ -1,0 +1,82 @@
+{
+  "abuse": {
+    "title": "What counts as abuse ?",
+    "content": [
+      "Abuse does not only mean physical violence. Many people face abuse without being hit.",
+
+      "Physical abuse includes:",
+      "Hitting, slapping, pushing, or kicking.",
+      "Throwing objects at you.",
+      "Blocking you from leaving a room.",
+
+      "Emotional or mental abuse includes:",
+      "Constant insults or humiliation.",
+      "Making you feel worthless or scared.",
+      "Threatening to hurt you or themselves.",
+
+      "Verbal abuse includes:",
+      "Shouting, name-calling, or abusive language.",
+      "Publicly embarrassing you.",
+
+      "Controlling behavior includes:",
+      "Checking your phone or messages.",
+      "Controlling who you talk to or where you go.",
+      "Forcing you to stay at home.",
+
+      "Sexual abuse includes:",
+      "Any forced or unwanted sexual action.",
+      "Being pressured into things you are not comfortable with.",
+
+      "If someone's behavior makes you feel afraid, trapped, or unsafe, it may be abuse.",
+      "Remember: Abuse is never your fault."
+    ]
+  },
+
+  "legal": {
+    "title": "Your legal rights",
+    "content": [
+      "Everyone has the right to live safely and with dignity.",
+
+      "In India, the law recognizes that abuse can happen inside homes and relationships, and it provides protection to people facing such situations.",
+
+      "You have legal protection against abuse, even if the person harming you is:",
+      "A spouse.",
+      "A family member.",
+      "Someone you know or trust.",
+
+      "You have the right to:",
+      "Ask for help and protection.",
+      "Seek medical care if you are hurt.",
+      "Talk to trusted authorities or support services.",
+      "Get legal support if you choose.",
+
+"You do not need:",
+      "proof", 
+      "money", 
+      "permission from anyone to seek help.\n",
+
+      "Remember, even if the abuse has been happening for a long time, it is never too late to ask for support.",
+      "Remember, your safety and well-being matter the most."
+    ]
+  },
+
+  "helplines": {
+    "title": "Emergency helplines",
+    "content": [
+      "If you feel unsafe or in immediate danger, help is available.",
+
+      "India emergency numbers:",
+      "112 — Police emergency.",
+      "181 — Women's helpline.",
+      "1091 — Domestic violence support.",
+      "1098 — Child helpline.",
+
+      "You can call these numbers:",
+      "At any time.",
+      "From any phone.",
+      "Even if you are unsure what to say.",
+
+      "If speaking is difficult, try to get to a safe place and reach out when you can."
+    ]
+  }
+}
