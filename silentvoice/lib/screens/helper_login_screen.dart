@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:silentvoice/screens/helper_pin_setup_screen.dart';
+import 'package:silentvoice/screens/user_pin_screen.dart';
+import 'package:silentvoice/screens/role_selection_screen.dart';
 
 class HelperLoginScreen extends StatefulWidget {
   const HelperLoginScreen({super.key});
@@ -9,8 +10,8 @@ class HelperLoginScreen extends StatefulWidget {
 }
 
 class _HelperLoginScreenState extends State<HelperLoginScreen> {
-  late String email;
-  late String password;
+  String email = '';
+  String password = '';
   bool get isValid {
     return password.length >= 6 && email.isNotEmpty;
   }
@@ -41,7 +42,9 @@ class _HelperLoginScreenState extends State<HelperLoginScreen> {
             TextField(
               keyboardType: TextInputType.emailAddress,
               onChanged: (value) {
-                email = value;
+                setState(() {
+                  email = value;
+                });
               },
               decoration: const InputDecoration(
                 labelText: 'Email',
@@ -57,7 +60,9 @@ class _HelperLoginScreenState extends State<HelperLoginScreen> {
             TextField(
               obscureText: true,
               onChanged: (value) {
-                password = value;
+                setState(() {
+                  password = value;
+                });
               },
               decoration: const InputDecoration(
                 labelText: 'Password',
@@ -78,7 +83,7 @@ class _HelperLoginScreenState extends State<HelperLoginScreen> {
                         Navigator.push(
                           context,
                           MaterialPageRoute(
-                            builder: (_) => const HelperPinSetupScreen(),
+                            builder: (_) => UserPinScreen(role: PinRole.helper),
                           ),
                         );
                       }
