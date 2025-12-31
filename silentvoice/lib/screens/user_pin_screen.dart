@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:silentvoice/screens/calculator_screen.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:silentvoice/security/pin_hash.dart';
 
 enum PinRole { user, helper }
 
@@ -18,18 +19,22 @@ class _UserPinScreenState extends State<UserPinScreen> {
   Future<void> onSavePressed() async {
     final prefs = await SharedPreferences.getInstance();
 
-    // Mark app lock as enabled
+    final salt = DateTime.now().millisecondsSinceEpoch.toString();
+    final pinHash = hashPin(pin, salt);
+
     await prefs.setBool('isAppLockEnabled', true);
+
     if (widget.role == PinRole.user) {
-      await prefs.setString('userPin', pin); // TEMP
+      await prefs.setString('user_pin_hash', pinHash);
+      await prefs.setString('user_pin_salt', salt);
     } else {
-      await prefs.setString('helperPin', pin);
+      await prefs.setString('helper_pin_hash', pinHash);
+      await prefs.setString('helper_pin_salt', salt);
       await prefs.setBool('isHelperSetupComplete', true);
     }
-    // SAFETY CHECK
+
     if (!mounted) return;
 
-    // Go back to calculator
     Navigator.pushAndRemoveUntil(
       context,
       MaterialPageRoute(builder: (_) => const CalculatorScreen()),

@@ -64,7 +64,7 @@ class _RoleSelectionScreenState extends State<RoleSelectionScreen> {
                     children: [
                       Positioned(
                         top: 20,
-                        left: MediaQuery.of(context).size.width / 2 - 160,
+                        left: MediaQuery.of(context).size.width / 2 - 165,
                         child: _buildRoleCircle(
                           'HELPER',
                           size: 175,
@@ -77,10 +77,8 @@ class _RoleSelectionScreenState extends State<RoleSelectionScreen> {
                         ),
                       ),
                       Positioned(
-                        top: 98, // slightly lower
-                        left:
-                            MediaQuery.of(context).size.width / 2 -
-                            20, // slightly right
+                        top: 98,
+                        left: MediaQuery.of(context).size.width / 2 - 20,
                         child: _buildRoleCircle(
                           'USER',
                           size: 190,
@@ -96,11 +94,8 @@ class _RoleSelectionScreenState extends State<RoleSelectionScreen> {
                         top: 227,
                         left: MediaQuery.of(context).size.width / 2 - 130,
                         child: GestureDetector(
-                          onTap: _handleNext, // ALWAYS active
-                          child: GestureDetector(
-                            onTap: selectedRole == null ? null : _handleNext,
-                            child: _buildNextButton(selectedRole != null),
-                          ),
+                          onTap: selectedRole == null ? null : _handleNext,
+                          child: _buildNextButton(selectedRole != null),
                         ),
                       ),
                     ],

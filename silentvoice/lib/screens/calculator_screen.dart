@@ -3,6 +3,7 @@ import 'package:silentvoice/screens/role_selection_screen.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:silentvoice/screens/hidden_dsahboard_screen.dart';
 import 'package:silentvoice/screens/helper_dashboard_screen.dart';
+import 'package:silentvoice/security/pin_hash.dart';
 
 class CalculatorScreen extends StatefulWidget {
   const CalculatorScreen({super.key});
@@ -15,8 +16,11 @@ class _CalculatorScreenState extends State<CalculatorScreen> {
   String result = '0';
 
   bool isAppLockEnabled = false;
-  String? userPin;
-  String? helperPin;
+  String? userPinHash;
+  String? userPinSalt;
+
+  String? helperPinHash;
+  String? helperPinSalt;
 
   @override
   void initState() {
@@ -27,36 +31,47 @@ class _CalculatorScreenState extends State<CalculatorScreen> {
   Future<void> loadAppLockStatus() async {
     final prefs = await SharedPreferences.getInstance();
     final enabled = prefs.getBool('isAppLockEnabled') ?? false;
-    final upin = prefs.getString('userPin');
-    final hpin = prefs.getString('helperPin');
+    final uHash = prefs.getString('user_pin_hash');
+    final uSalt = prefs.getString('user_pin_salt');
+
+    final hHash = prefs.getString('helper_pin_hash');
+    final hSalt = prefs.getString('helper_pin_salt');
 
     if (!mounted) return;
 
     setState(() {
       isAppLockEnabled = enabled;
-      userPin = upin;
-      helperPin = hpin;
+
+      userPinHash = uHash;
+      userPinSalt = uSalt;
+
+      helperPinHash = hHash;
+      helperPinSalt = hSalt;
     });
   }
 
   void handleEquals() {
     if (isAppLockEnabled) {
-      if (userPin != null && expression == userPin) {
-        openUserDashboard();
-        return;
+      if (userPinHash != null && userPinSalt != null) {
+        final enteredHash = hashPin(expression, userPinSalt!);
+        if (enteredHash == userPinHash) {
+          openUserDashboard();
+          return;
+        }
       }
 
-      if (helperPin != null && expression == helperPin) {
-        openHelperDashboard();
-        return;
+      if (helperPinHash != null && helperPinSalt != null) {
+        final enteredHash = hashPin(expression, helperPinSalt!);
+        if (enteredHash == helperPinHash) {
+          openHelperDashboard();
+          return;
+        }
       }
     }
     calculateResult();
   }
 
   void openUserDashboard() {
-    if (!mounted) return;
-
     Navigator.pushAndRemoveUntil(
       context,
       MaterialPageRoute(builder: (_) => const HiddenDashboardScreen()),
@@ -65,8 +80,6 @@ class _CalculatorScreenState extends State<CalculatorScreen> {
   }
 
   void openHelperDashboard() {
-    if (!mounted) return;
-
     Navigator.pushAndRemoveUntil(
       context,
       MaterialPageRoute(builder: (_) => const HelperDashboardScreen()),
@@ -120,9 +133,7 @@ class _CalculatorScreenState extends State<CalculatorScreen> {
 
     if (isOperator(lastChar)) {
       expression = expression.substring(0, expression.length - 1) + op;
-    }
-    // If last char is '(' → do nothing
-    else if (lastChar == '(') {
+    } else if (lastChar == '(') {
       return;
     } else {
       expression += op;
@@ -139,7 +150,6 @@ class _CalculatorScreenState extends State<CalculatorScreen> {
     try {
       String exp = expression;
 
-      // Replace calculator symbols with Dart operators
       exp = exp.replaceAll('×', '*');
       exp = exp.replaceAll('÷', '/');
 
@@ -151,7 +161,6 @@ class _CalculatorScreenState extends State<CalculatorScreen> {
   }
 
   double _evaluateExpression(String exp) {
-    exp = exp.replaceAll(' ', '');
 
     List<double> numbers = [];
     List<String> operators = [];
@@ -232,10 +241,8 @@ class _CalculatorScreenState extends State<CalculatorScreen> {
       body: SafeArea(
         child: Stack(
           children: [
-            // 🔹 MAIN CALCULATOR UI (UNCHANGED)
             Column(
               children: [
-                // DISPLAY AREA
                 Expanded(
                   flex: 4,
                   child: Container(
@@ -253,7 +260,6 @@ class _CalculatorScreenState extends State<CalculatorScreen> {
                   ),
                 ),
 
-                // BUTTON AREA
                 Expanded(
                   flex: 7,
                   child: Container(
@@ -400,7 +406,6 @@ class _CalculatorScreenState extends State<CalculatorScreen> {
               ],
             ),
 
-            // THREE-DOT POPUP ICON
             if (!isAppLockEnabled)
               Positioned(
                 top: 10,
