@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:silentvoice/screens/user_pin_screen.dart';
-import 'package:silentvoice/screens/role_selection_screen.dart';
+import 'package:silentvoice/auth/auth_service.dart';
 
 class HelperLoginScreen extends StatefulWidget {
   const HelperLoginScreen({super.key});
@@ -12,8 +12,39 @@ class HelperLoginScreen extends StatefulWidget {
 class _HelperLoginScreenState extends State<HelperLoginScreen> {
   String email = '';
   String password = '';
+  bool isLoading = false;
+  String? errorMessage;
+  final AuthService _authService = AuthService();
+
   bool get isValid {
-    return password.length >= 6 && email.isNotEmpty;
+    return email.isNotEmpty && password.isNotEmpty;
+  }
+
+  Future<void> _handleLogin() async {
+    setState(() {
+      isLoading = true;
+      errorMessage = null;
+    });
+
+    final user = await _authService.signInHelperWithEmail(
+      email.trim(),
+      password,
+    );
+
+    setState(() {
+      isLoading = false;
+    });
+
+    if (user != null) {
+      Navigator.push(
+        context,
+        MaterialPageRoute(builder: (_) => UserPinScreen(role: PinRole.helper)),
+      );
+    } else {
+      setState(() {
+        errorMessage = 'Invalid Email or Password';
+      });
+    }
   }
 
   @override
@@ -38,7 +69,6 @@ class _HelperLoginScreenState extends State<HelperLoginScreen> {
 
             const SizedBox(height: 24),
 
-            // EMAIL FIELD
             TextField(
               keyboardType: TextInputType.emailAddress,
               onChanged: (value) {
@@ -56,7 +86,6 @@ class _HelperLoginScreenState extends State<HelperLoginScreen> {
 
             const SizedBox(height: 16),
 
-            // PASSWORD FIELD
             TextField(
               obscureText: true,
               onChanged: (value) {
@@ -77,20 +106,24 @@ class _HelperLoginScreenState extends State<HelperLoginScreen> {
             SizedBox(
               width: double.infinity,
               child: ElevatedButton(
-                onPressed: isValid
-                    ? () {
-                        // TEMP: Navigate to Helper PIN Setup
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (_) => UserPinScreen(role: PinRole.helper),
-                          ),
-                        );
-                      }
-                    : null,
-                child: const Text('Login'),
+                onPressed: isValid && !isLoading ? _handleLogin : null,
+                child: isLoading
+                    ? const SizedBox(
+                        height: 20,
+                        width: 20,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          color: Colors.white,
+                        ),
+                      )
+                    : const Text('Login'),
               ),
             ),
+
+            if (errorMessage != null) ...[
+              const SizedBox(height: 12),
+              Text(errorMessage!, style: const TextStyle(color: Colors.red)),
+            ],
           ],
         ),
       ),
