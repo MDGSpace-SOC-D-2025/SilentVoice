@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "951900586090",
+    "project_id": "silentvoice-72166",
+    "storage_bucket": "silentvoice-72166.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:951900586090:android:ab8c94ef96b8910a0d4a13",
+        "android_client_info": {
+          "package_name": "com.example.silentvoice"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBFQqxQikPNgNz165W_GyXyOdOwE5ygxUM"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
