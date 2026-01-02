@@ -17,6 +17,7 @@ class VaultHomeScreen extends StatefulWidget {
 
 class _VaultHomeScreenState extends State<VaultHomeScreen> {
   late final Uint8List encryptionKey;
+  final List<EvidenceItem> evidenceList = [];
 
   @override
   void initState() {
@@ -26,15 +27,20 @@ class _VaultHomeScreenState extends State<VaultHomeScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final List<EvidenceItem> evidenceList = [];
-
     return Scaffold(
       appBar: AppBar(title: const Text('Evidence Vault')),
       floatingActionButton: FloatingActionButton(
         onPressed: () {
           showModalBottomSheet(
             context: context,
-            builder: (_) => const AddEvidenceSheet(),
+            builder: (_) => AddEvidenceSheet(
+              encryptionKey: encryptionKey,
+              onEvidenceAdded: (item) {
+                setState(() {
+                  evidenceList.add(item);
+                });
+              },
+            ),
           );
         },
         child: const Icon(Icons.add),
@@ -44,7 +50,10 @@ class _VaultHomeScreenState extends State<VaultHomeScreen> {
           : ListView.builder(
               itemCount: evidenceList.length,
               itemBuilder: (context, index) {
-                return EvidenceTile(item: evidenceList[index]);
+                return EvidenceTile(
+                  item: evidenceList[index],
+                  encryptionKey: encryptionKey,
+                );
               },
             ),
     );
