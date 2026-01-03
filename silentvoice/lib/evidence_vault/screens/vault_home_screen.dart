@@ -1,10 +1,13 @@
 import 'dart:typed_data';
 import 'package:flutter/material.dart';
 
-import '../models/evidence_item.dart';
-import '../widgets/empty_vault_view.dart';
-import '../widgets/evidence_tile.dart';
-import 'add_evidence_sheet.dart';
+import 'package:silentvoice/evidence_vault/models/evidence_item.dart';
+import 'package:silentvoice/evidence_vault/repository/evidence_repository.dart';
+import 'package:silentvoice/evidence_vault/repository/local_evidence_repository.dart';
+import 'package:silentvoice/evidence_vault/widgets/empty_vault_view.dart';
+import 'package:silentvoice/evidence_vault/widgets/evidence_tile.dart';
+import 'package:silentvoice/evidence_vault/SCREENS/add_evidence_sheet.dart';
+import 'package:silentvoice/widgets/quick_exit_appbar_action.dart';
 
 class VaultHomeScreen extends StatefulWidget {
   final Uint8List encryptionKey;
@@ -19,27 +22,48 @@ class _VaultHomeScreenState extends State<VaultHomeScreen> {
   late final Uint8List encryptionKey;
   final List<EvidenceItem> evidenceList = [];
 
+  final EvidenceRepository repository = LocalEvidenceRepository();
+
   @override
   void initState() {
     super.initState();
     encryptionKey = widget.encryptionKey;
+    _loadEvidence();
+  }
+
+  Future<void> _loadEvidence() async {
+    final stored = await repository.loadEvidence();
+
+    if (!mounted) return;
+
+    setState(() {
+      evidenceList.clear();
+      evidenceList.addAll(stored);
+    });
+  }
+
+  Future<void> _addEvidence(EvidenceItem item) async {
+    setState(() {
+      evidenceList.add(item);
+    });
+
+    await repository.saveEvidence(evidenceList);
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Evidence Vault')),
+      appBar: AppBar(
+        title: const Text('Evidence Vault'),
+        actions: [QuickExitButton()],
+      ),
       floatingActionButton: FloatingActionButton(
         onPressed: () {
           showModalBottomSheet(
             context: context,
             builder: (_) => AddEvidenceSheet(
               encryptionKey: encryptionKey,
-              onEvidenceAdded: (item) {
-                setState(() {
-                  evidenceList.add(item);
-                });
-              },
+              onEvidenceAdded: _addEvidence,
             ),
           );
         },

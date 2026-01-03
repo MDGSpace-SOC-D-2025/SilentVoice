@@ -2,9 +2,10 @@ import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
 import 'package:silentvoice/security/key_derivation.dart';
-import 'vault_home_screen.dart';
+import 'package:silentvoice/evidence_vault/screens/vault_home_screen.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import '/security/pin_hash.dart';
+import 'package:silentvoice/security/pin_hash.dart';
+import 'package:silentvoice/widgets/quick_exit_appbar_action.dart';
 
 class VaultLockScreen extends StatefulWidget {
   const VaultLockScreen({super.key});
@@ -83,7 +84,10 @@ class _VaultLockScreenState extends State<VaultLockScreen> {
     }
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Unlock Evidence Vault')),
+      appBar: AppBar(
+        title: const Text('Unlock Evidence Vault'),
+        actions: [QuickExitButton()],
+      ),
       body: Padding(
         padding: const EdgeInsets.all(24),
         child: Column(

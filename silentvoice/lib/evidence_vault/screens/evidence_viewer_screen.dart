@@ -2,8 +2,11 @@ import 'dart:io';
 import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
+import 'package:audioplayers/audioplayers.dart';
+import 'package:path_provider/path_provider.dart';
 
-import '../models/evidence_item.dart';
+import 'package:silentvoice/widgets/quick_exit_appbar_action.dart';
+import 'package:silentvoice/evidence_vault/models/evidence_item.dart';
 import 'package:silentvoice/security/aes_crypto.dart';
 
 class EvidenceViewerScreen extends StatefulWidget {
@@ -25,6 +28,9 @@ class _EvidenceViewerScreenState extends State<EvidenceViewerScreen> {
   bool isLoading = true;
   String? error;
 
+  AudioPlayer? _audioPlayer;
+  File? _tempAudioFile;
+
   @override
   void initState() {
     super.initState();
@@ -36,23 +42,52 @@ class _EvidenceViewerScreenState extends State<EvidenceViewerScreen> {
       final file = File(widget.item.encryptedPath);
       final encryptedBytes = await file.readAsBytes();
 
-      final bytes = AesCrypto.decrypt(
+      final decrypted = AesCrypto.decrypt(
         encryptedData: encryptedBytes,
         key: widget.encryptionKey,
       );
 
       if (!mounted) return;
 
-      setState(() {
-        decryptedBytes = bytes;
-        isLoading = false;
-      });
+      if (widget.item.type == EvidenceType.audio) {
+        final tempDir = await getTemporaryDirectory();
+        final tempFile = File('${tempDir.path}/${widget.item.id}');
+
+        await tempFile.writeAsBytes(decrypted);
+
+        _tempAudioFile = tempFile;
+        _audioPlayer = AudioPlayer();
+        await _audioPlayer!.setReleaseMode(ReleaseMode.stop);
+        setState(() {
+          isLoading = false;
+        });
+      } else {
+        setState(() {
+          decryptedBytes = decrypted;
+          isLoading = false;
+        });
+      }
     } catch (e) {
       setState(() {
         error = 'Failed to open evidence';
         isLoading = false;
       });
     }
+  }
+
+  Future<void> _playAudio() async {
+    if (_audioPlayer == null || _tempAudioFile == null) return;
+
+    await _audioPlayer!.setVolume(1.0);
+
+    await _audioPlayer!.play(
+      DeviceFileSource(_tempAudioFile!.path),
+      volume: 1.0,
+    );
+  }
+
+  Future<void> _stopAudio() async {
+    await _audioPlayer?.stop();
   }
 
   @override
@@ -69,7 +104,10 @@ class _EvidenceViewerScreenState extends State<EvidenceViewerScreen> {
     }
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Evidence')),
+      appBar: AppBar(
+        title: const Text('Evidence'),
+        actions: [QuickExitButton()],
+      ),
       body: _buildViewer(),
     );
   }
@@ -80,10 +118,37 @@ class _EvidenceViewerScreenState extends State<EvidenceViewerScreen> {
         return Image.memory(decryptedBytes!);
 
       case EvidenceType.audio:
-        return const Center(child: Text('Audio playback comes next'));
+        return Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              const Icon(Icons.audiotrack, size: 64),
+              const SizedBox(height: 16),
+              ElevatedButton(
+                onPressed: _playAudio,
+                child: const Text('Play Audio'),
+              ),
+              ElevatedButton(
+                onPressed: _stopAudio,
+                child: const Text('Stop Audio'),
+              ),
+            ],
+          ),
+        );
 
       case EvidenceType.video:
         return const Center(child: Text('Video playback comes next'));
     }
+  }
+
+  @override
+  void dispose() {
+    _audioPlayer?.dispose();
+
+    if (_tempAudioFile != null && _tempAudioFile!.existsSync()) {
+      _tempAudioFile!.deleteSync();
+    }
+
+    super.dispose();
   }
 }
