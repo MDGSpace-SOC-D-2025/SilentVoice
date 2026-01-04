@@ -3,6 +3,7 @@ enum EvidenceType { image, audio, video }
 class EvidenceItem {
   final String id;
   final EvidenceType type;
+  final String? note;
   final DateTime createdAt;
   final String encryptedPath;
 
@@ -11,6 +12,7 @@ class EvidenceItem {
     required this.type,
     required this.createdAt,
     required this.encryptedPath,
+    this.note,
   });
   Map<String, dynamic> toJson() {
     return {
@@ -18,6 +20,7 @@ class EvidenceItem {
       'type': type.name,
       'encryptedPath': encryptedPath,
       'createdAt': createdAt.toIso8601String(),
+      'note': note,
     };
   }
 
@@ -27,6 +30,7 @@ class EvidenceItem {
       type: EvidenceType.values.firstWhere((e) => e.name == json['type']),
       encryptedPath: json['encryptedPath'] as String,
       createdAt: DateTime.parse(json['createdAt'] as String),
+      note: json['note'] as String?,
     );
   }
 }

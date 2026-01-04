@@ -26,7 +26,19 @@ class EvidenceTile extends StatelessWidget {
             : Icons.videocam,
       ),
       title: Text(item.type.name.toUpperCase()),
-      subtitle: Text(item.createdAt.toString()),
+      subtitle: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(item.createdAt.toString()),
+          if (item.note != null && item.note!.isNotEmpty) ...[
+            const SizedBox(height: 4),
+            Text(
+              item.note!,
+              style: const TextStyle(fontSize: 13, color: Colors.black54),
+            ),
+          ],
+        ],
+      ),
       onTap: () {
         Navigator.push(
           context,
@@ -36,6 +48,7 @@ class EvidenceTile extends StatelessWidget {
           ),
         );
       },
+
       onLongPress: () async {
         final confirm = await showDialog<bool>(
           context: context,

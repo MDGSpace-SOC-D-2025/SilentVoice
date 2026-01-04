@@ -11,11 +11,49 @@ class AddEvidenceSheet extends StatelessWidget {
   final Uint8List encryptionKey;
   final void Function(EvidenceItem) onEvidenceAdded;
 
-  const AddEvidenceSheet({
+  AddEvidenceSheet({
     super.key,
     required this.encryptionKey,
     required this.onEvidenceAdded,
   });
+
+  Future<String?> _askForNote(BuildContext context) async {
+    final controller = TextEditingController();
+
+    return showDialog<String>(
+      context: context,
+      builder: (context) {
+        final screenWidth = MediaQuery.of(context).size.width;
+
+        return AlertDialog(
+          title: const Text('Add a note (optional)'),
+
+          content: SizedBox(
+            width: screenWidth * 0.90,
+            child: TextField(
+              controller: controller,
+              maxLines: 4,
+              decoration: const InputDecoration(
+                hintText: 'Write a short description',
+                border: OutlineInputBorder(),
+              ),
+            ),
+          ),
+
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context, null),
+              child: const Text('Skip'),
+            ),
+            TextButton(
+              onPressed: () => Navigator.pop(context, controller.text.trim()),
+              child: const Text('Save'),
+            ),
+          ],
+        );
+      },
+    );
+  }
 
   Future<void> _pickFile(BuildContext context, FileType type) async {
     try {
@@ -43,6 +81,7 @@ class AddEvidenceSheet extends StatelessWidget {
 
       await encryptedFile.writeAsBytes(encryptedBytes);
 
+      final note = await _askForNote(context);
       final item = EvidenceItem(
         id: fileName,
         type: type == FileType.image
@@ -52,6 +91,7 @@ class AddEvidenceSheet extends StatelessWidget {
             : EvidenceType.video,
         encryptedPath: encryptedFile.path,
         createdAt: DateTime.now(),
+        note: note == null || note.isEmpty ? null : note,
       );
 
       onEvidenceAdded(item);
