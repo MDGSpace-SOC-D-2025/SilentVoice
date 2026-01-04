@@ -1,3 +1,4 @@
+import 'dart:io';
 import 'dart:typed_data';
 import 'package:flutter/material.dart';
 
@@ -77,6 +78,23 @@ class _VaultHomeScreenState extends State<VaultHomeScreen> {
                 return EvidenceTile(
                   item: evidenceList[index],
                   encryptionKey: encryptionKey,
+                  onDelete: () async {
+                    final item = evidenceList[index];
+
+                    // 1️⃣ Delete encrypted file
+                    final file = File(item.encryptedPath);
+                    if (await file.exists()) {
+                      await file.delete();
+                    }
+
+                    // 2️⃣ Remove metadata from list
+                    setState(() {
+                      evidenceList.removeAt(index);
+                    });
+
+                    // 3️⃣ Persist updated metadata
+                    await repository.saveEvidence(evidenceList);
+                  },
                 );
               },
             ),
