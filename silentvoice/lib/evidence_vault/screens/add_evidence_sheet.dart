@@ -8,8 +8,9 @@ import 'package:silentvoice/security/aes_crypto.dart';
 import 'package:silentvoice/security/app_lock_controller.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:permission_handler/permission_handler.dart';
+import 'package:record/record.dart';
 
-class AddEvidenceSheet extends StatelessWidget {
+class AddEvidenceSheet extends StatefulWidget {
   final Uint8List encryptionKey;
   final void Function(EvidenceItem) onEvidenceAdded;
 
@@ -18,146 +19,202 @@ class AddEvidenceSheet extends StatelessWidget {
     required this.encryptionKey,
     required this.onEvidenceAdded,
   });
-  Future<bool> _requestCameraPermission() async {
-    final status = await Permission.camera.request();
-    return status.isGranted;
+
+  @override
+  State<AddEvidenceSheet> createState() => _AddEvidenceSheetState();
+}
+
+class _AddEvidenceSheetState extends State<AddEvidenceSheet> {
+  final AudioRecorder _recorder = AudioRecorder();
+
+  Future<void> _saveEncryptedEvidence({
+    required File sourceFile,
+    required EvidenceType type,
+  }) async {
+    final rawBytes = await sourceFile.readAsBytes();
+
+    final encryptedBytes = AesCrypto.encrypt(
+      data: rawBytes,
+      key: widget.encryptionKey,
+    );
+
+    final dir = await getApplicationDocumentsDirectory();
+    final fileName = '${DateTime.now().millisecondsSinceEpoch}.enc';
+    final encryptedFile = File('${dir.path}/$fileName');
+
+    await encryptedFile.writeAsBytes(encryptedBytes);
+
+    final note = await _askForNote(context);
+
+    final item = EvidenceItem(
+      id: fileName,
+      type: type,
+      encryptedPath: encryptedFile.path,
+      createdAt: DateTime.now(),
+      note: note?.isEmpty == true ? null : note,
+    );
+
+    widget.onEvidenceAdded(item);
   }
 
-  Future<File?> _captureImageFromCamera() async {
-    final granted = await _requestCameraPermission();
-    if (!granted) return null;
+  Future<File?> _captureImage() async {
+    final status = await Permission.camera.request();
+    if (!status.isGranted) return null;
 
     final picker = ImagePicker();
-
     final picked = await picker.pickImage(
       source: ImageSource.camera,
       imageQuality: 85,
     );
 
-    if (picked == null) return null;
-
-    return File(picked.path);
+    return picked == null ? null : File(picked.path);
   }
 
-  Future<String?> _askForNote(BuildContext context) async {
-    final controller = TextEditingController();
-
-    return showDialog<String>(
-      context: context,
-      builder: (context) {
-        final screenWidth = MediaQuery.of(context).size.width;
-
-        return AlertDialog(
-          title: const Text('Add a note (optional)'),
-
-          content: SizedBox(
-            width: screenWidth * 0.90,
-            child: TextField(
-              controller: controller,
-              maxLines: 4,
-              decoration: const InputDecoration(
-                hintText: 'Write a short description',
-                border: OutlineInputBorder(),
-              ),
-            ),
-          ),
-
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(context, null),
-              child: const Text('Skip'),
-            ),
-            TextButton(
-              onPressed: () => Navigator.pop(context, controller.text.trim()),
-              child: const Text('Save'),
-            ),
-          ],
-        );
-      },
-    );
-  }
-
-  Future<File?> _pickImage(BuildContext context) async {
+  Future<File?> _pickImage() async {
     return showDialog<File?>(
       context: context,
       builder: (_) => SimpleDialog(
         title: const Text('Add Image'),
         children: [
           SimpleDialogOption(
-            onPressed: () async {
-              Navigator.pop(context, await _captureImageFromCamera());
-            },
             child: const Text('Take Photo'),
+            onPressed: () async {
+              Navigator.pop(context, await _captureImage());
+            },
           ),
           SimpleDialogOption(
-            onPressed: () async {
-              Navigator.pop(context, await _pickFileFromGallery());
-            },
             child: const Text('Choose from Device'),
+            onPressed: () async {
+              final result = await FilePicker.platform.pickFiles(
+                type: FileType.image,
+              );
+              Navigator.pop(
+                context,
+                result?.files.single.path == null
+                    ? null
+                    : File(result!.files.single.path!),
+              );
+            },
           ),
         ],
       ),
     );
   }
 
-  Future<File?> _pickFileFromGallery() async {
-    final result = await FilePicker.platform.pickFiles(
-      type: FileType.image,
-      allowMultiple: false,
+  Future<File?> _recordAudio() async {
+    final tempDir = await getTemporaryDirectory();
+    final path =
+        '${tempDir.path}/audio_${DateTime.now().millisecondsSinceEpoch}.m4a';
+
+    bool isRecording = false;
+
+    return showDialog<File?>(
+      context: context,
+      barrierDismissible: false,
+      builder: (dialogContext) {
+        return StatefulBuilder(
+          builder: (_, setState) {
+            return AlertDialog(
+              title: const Text('Record Audio'),
+              content: Icon(
+                isRecording ? Icons.mic : Icons.mic_none,
+                size: 64,
+                color: isRecording ? Colors.red : Colors.grey,
+              ),
+              actions: [
+                TextButton(
+                  onPressed: isRecording
+                      ? null
+                      : () async {
+                          if (!await _recorder.hasPermission()) return;
+                          await _recorder.start(
+                            const RecordConfig(),
+                            path: path,
+                          );
+                          setState(() => isRecording = true);
+                        },
+                  child: const Text('Start'),
+                ),
+                TextButton(
+                  onPressed: !isRecording
+                      ? null
+                      : () async {
+                          await _recorder.stop();
+                          Navigator.pop(dialogContext, File(path));
+                        },
+                  child: const Text('Stop'),
+                ),
+              ],
+            );
+          },
+        );
+      },
     );
-
-    if (result == null || result.files.single.path == null) return null;
-
-    return File(result.files.single.path!);
   }
 
-  Future<void> _pickFile(BuildContext context, FileType type) async {
-    try {
-      AppLockController.allowBackground = true;
+  Future<File?> _chooseAudioSource(BuildContext context) async {
+    return showDialog<File?>(
+      context: context,
+      builder: (_) => SimpleDialog(
+        title: const Text('Add Audio'),
+        children: [
+          SimpleDialogOption(
+            onPressed: () async {
+              Navigator.pop(context, await _recordAudio());
+            },
+            child: const Text('Record Audio'),
+          ),
+          SimpleDialogOption(
+            onPressed: () async {
+              final result = await FilePicker.platform.pickFiles(
+                type: FileType.audio,
+                allowMultiple: false,
+              );
+              Navigator.pop(
+                context,
+                result?.files.single.path == null
+                    ? null
+                    : File(result!.files.single.path!),
+              );
+            },
+            child: const Text('Pick Audio File'),
+          ),
+        ],
+      ),
+    );
+  }
 
-      final result = await FilePicker.platform.pickFiles(
-        type: type,
-        allowMultiple: false,
-      );
+  Future<String?> _askForNote(BuildContext context) async {
+    final controller = TextEditingController();
+    final width = MediaQuery.of(context).size.width;
 
-      if (result == null || result.files.single.path == null) return;
-
-      final pickedFile = File(result.files.single.path!);
-
-      final rawBytes = await pickedFile.readAsBytes();
-
-      final encryptedBytes = AesCrypto.encrypt(
-        data: rawBytes,
-        key: encryptionKey,
-      );
-
-      final dir = await getApplicationDocumentsDirectory();
-      final fileName = '${DateTime.now().millisecondsSinceEpoch}.enc';
-      final encryptedFile = File('${dir.path}/$fileName');
-
-      await encryptedFile.writeAsBytes(encryptedBytes);
-
-      final note = await _askForNote(context);
-      final item = EvidenceItem(
-        id: fileName,
-        type: type == FileType.image
-            ? EvidenceType.image
-            : type == FileType.audio
-            ? EvidenceType.audio
-            : EvidenceType.video,
-        encryptedPath: encryptedFile.path,
-        createdAt: DateTime.now(),
-        note: note == null || note.isEmpty ? null : note,
-      );
-
-      onEvidenceAdded(item);
-
-      if (context.mounted) {
-        Navigator.pop(context);
-      }
-    } finally {
-      AppLockController.allowBackground = false;
-    }
+    return showDialog<String>(
+      context: context,
+      builder: (_) => AlertDialog(
+        title: const Text('Add a note (optional)'),
+        content: SizedBox(
+          width: width * 0.9,
+          child: TextField(
+            controller: controller,
+            maxLines: 4,
+            decoration: const InputDecoration(
+              hintText: 'Write a short description',
+              border: OutlineInputBorder(),
+            ),
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, null),
+            child: const Text('Skip'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(context, controller.text.trim()),
+            child: const Text('Save'),
+          ),
+        ],
+      ),
+    );
   }
 
   @override
@@ -180,35 +237,13 @@ class AddEvidenceSheet extends StatelessWidget {
               onTap: () async {
                 try {
                   AppLockController.allowBackground = true;
-
-                  final file = await _pickImage(context);
+                  final file = await _pickImage();
                   if (file == null) return;
 
-                  final rawBytes = await file.readAsBytes();
-
-                  final encryptedBytes = AesCrypto.encrypt(
-                    data: rawBytes,
-                    key: encryptionKey,
-                  );
-
-                  final dir = await getApplicationDocumentsDirectory();
-                  final fileName =
-                      '${DateTime.now().millisecondsSinceEpoch}.enc';
-                  final encryptedFile = File('${dir.path}/$fileName');
-
-                  await encryptedFile.writeAsBytes(encryptedBytes);
-
-                  final note = await _askForNote(context);
-
-                  final item = EvidenceItem(
-                    id: fileName,
+                  await _saveEncryptedEvidence(
+                    sourceFile: file,
                     type: EvidenceType.image,
-                    encryptedPath: encryptedFile.path,
-                    createdAt: DateTime.now(),
-                    note: note?.isEmpty == true ? null : note,
                   );
-
-                  onEvidenceAdded(item);
 
                   if (context.mounted) Navigator.pop(context);
                 } finally {
@@ -220,17 +255,61 @@ class AddEvidenceSheet extends StatelessWidget {
             ListTile(
               leading: const Icon(Icons.mic),
               title: const Text('Add Audio'),
-              onTap: () => _pickFile(context, FileType.audio),
+              onTap: () async {
+                try {
+                  AppLockController.allowBackground = true;
+
+                  final file = await _chooseAudioSource(context);
+                  if (file == null) return;
+
+                  await _saveEncryptedEvidence(
+                    sourceFile: file,
+                    type: EvidenceType.audio,
+                  );
+
+                  if (await file.exists()) {
+                    await file.delete();
+                  }
+
+                  if (context.mounted) Navigator.pop(context);
+                } finally {
+                  AppLockController.allowBackground = false;
+                }
+              },
             ),
 
             ListTile(
               leading: const Icon(Icons.videocam),
               title: const Text('Add Video'),
-              onTap: () => _pickFile(context, FileType.video),
+              onTap: () async {
+                try {
+                  AppLockController.allowBackground = true;
+
+                  final result = await FilePicker.platform.pickFiles(
+                    type: FileType.video,
+                  );
+                  if (result?.files.single.path == null) return;
+
+                  await _saveEncryptedEvidence(
+                    sourceFile: File(result!.files.single.path!),
+                    type: EvidenceType.video,
+                  );
+
+                  if (context.mounted) Navigator.pop(context);
+                } finally {
+                  AppLockController.allowBackground = false;
+                }
+              },
             ),
           ],
         ),
       ),
     );
+  }
+
+  @override
+  void dispose() {
+    _recorder.dispose();
+    super.dispose();
   }
 }
