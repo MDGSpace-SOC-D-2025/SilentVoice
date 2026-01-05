@@ -26,6 +26,7 @@ class AddEvidenceSheet extends StatefulWidget {
 
 class _AddEvidenceSheetState extends State<AddEvidenceSheet> {
   final AudioRecorder _recorder = AudioRecorder();
+  final ImagePicker _imagePicker = ImagePicker();
 
   Future<void> _saveEncryptedEvidence({
     required File sourceFile,
@@ -55,6 +56,16 @@ class _AddEvidenceSheetState extends State<AddEvidenceSheet> {
     );
 
     widget.onEvidenceAdded(item);
+    if (context.mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text(
+            'Evidence saved securely. If this file came from your device, you may now safely delete the original file if you wish.',
+          ),
+          duration: Duration(seconds: 4),
+        ),
+      );
+    }
   }
 
   Future<File?> _captureImage() async {
@@ -66,6 +77,12 @@ class _AddEvidenceSheetState extends State<AddEvidenceSheet> {
       source: ImageSource.camera,
       imageQuality: 85,
     );
+
+    return picked == null ? null : File(picked.path);
+  }
+
+  Future<File?> _pickImageFromGallery() async {
+    final picked = await _imagePicker.pickImage(source: ImageSource.gallery);
 
     return picked == null ? null : File(picked.path);
   }
@@ -83,17 +100,9 @@ class _AddEvidenceSheetState extends State<AddEvidenceSheet> {
             },
           ),
           SimpleDialogOption(
-            child: const Text('Choose from Device'),
+            child: const Text('Choose from Gallery'),
             onPressed: () async {
-              final result = await FilePicker.platform.pickFiles(
-                type: FileType.image,
-              );
-              Navigator.pop(
-                context,
-                result?.files.single.path == null
-                    ? null
-                    : File(result!.files.single.path!),
-              );
+              Navigator.pop(context, await _pickImageFromGallery());
             },
           ),
         ],
