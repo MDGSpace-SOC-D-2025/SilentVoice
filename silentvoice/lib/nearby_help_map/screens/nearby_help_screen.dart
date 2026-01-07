@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import '../services/location_service.dart';
 import '../widgets/google_map_widget.dart';
+import '../services/nearby_places_service.dart';
+import '../models/nearby_place.dart';
 
 class NearbyHelpScreen extends StatefulWidget {
   const NearbyHelpScreen({super.key});
@@ -28,9 +30,12 @@ class _NearbyHelpScreenState extends State<NearbyHelpScreen> {
     try {
       final location = await _locationService.getCurrentLocation();
 
+      final placesService = NearbyPlacesService();
+      final places = await placesService.fetchNearbyHelp(location);
+
       setState(() {
         _currentLocation = location;
-        _markers = _dummyMarkers(location);
+        _markers = _markersFromPlaces(places);
         _isLoading = false;
       });
     } catch (e) {
@@ -41,19 +46,14 @@ class _NearbyHelpScreenState extends State<NearbyHelpScreen> {
     }
   }
 
-  Set<Marker> _dummyMarkers(LatLng userLocation) {
-    return {
-      Marker(
-        markerId: const MarkerId('police'),
-        position: LatLng(userLocation.latitude + 0.002, userLocation.longitude),
-        infoWindow: const InfoWindow(title: 'Police Station'),
-      ),
-      Marker(
-        markerId: const MarkerId('hospital'),
-        position: LatLng(userLocation.latitude, userLocation.longitude + 0.002),
-        infoWindow: const InfoWindow(title: 'Hospital'),
-      ),
-    };
+  Set<Marker> _markersFromPlaces(List<NearbyPlace> places) {
+    return places.map((place) {
+      return Marker(
+        markerId: MarkerId(place.name),
+        position: LatLng(place.lat, place.lng),
+        infoWindow: InfoWindow(title: place.name, snippet: place.type),
+      );
+    }).toSet();
   }
 
   @override
