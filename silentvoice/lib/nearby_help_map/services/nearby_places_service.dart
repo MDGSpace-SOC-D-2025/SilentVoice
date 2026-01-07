@@ -35,20 +35,25 @@ class NearbyPlacesService {
     );
 
     if (response.statusCode != 200) {
-      throw Exception(
-        'Places API error ${response.statusCode}: ${response.body}',
-      );
+      throw Exception('Failed to fetch nearby places');
     }
 
     final decoded = jsonDecode(response.body);
     final places = decoded['places'] as List<dynamic>? ?? [];
 
     return places.map((p) {
+      final List types = p['types'] ?? [];
+
+      final String resolvedType = types.contains('hospital')
+          ? 'hospital'
+          : types.contains('police')
+          ? 'police'
+          : 'other';
       return NearbyPlace(
         name: p['displayName']['text'],
         lat: p['location']['latitude'],
         lng: p['location']['longitude'],
-        type: (p['types'] as List).first,
+        type: resolvedType,
       );
     }).toList();
   }
