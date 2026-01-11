@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:silentvoice/screens/role_selection_screen.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:silentvoice/screens/hidden_dsahboard_screen.dart';
-import 'package:silentvoice/screens/helper_dashboard_screen.dart';
+import 'package:silentvoice/screens/hidden_dashboard_screen.dart';
+import 'package:silentvoice/anonymous_chat/screens/helper_dashboard_screen.dart';
 import 'package:silentvoice/security/pin_hash.dart';
 
 class CalculatorScreen extends StatefulWidget {
@@ -82,7 +82,7 @@ class _CalculatorScreenState extends State<CalculatorScreen> {
   void openHelperDashboard() {
     Navigator.pushAndRemoveUntil(
       context,
-      MaterialPageRoute(builder: (_) => const HelperDashboardScreen()),
+      MaterialPageRoute(builder: (_) => HelperDashboardScreen()),
       (route) => false,
     );
   }
@@ -161,7 +161,6 @@ class _CalculatorScreenState extends State<CalculatorScreen> {
   }
 
   double _evaluateExpression(String exp) {
-
     List<double> numbers = [];
     List<String> operators = [];
     int i = 0;

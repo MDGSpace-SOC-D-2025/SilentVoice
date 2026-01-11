@@ -103,7 +103,7 @@ class _UserPinScreenState extends State<UserPinScreen> {
               'ⓘ If you forget this PIN, data cannot be recovered',
               style: TextStyle(
                 fontSize: 13,
-                color: Color.fromARGB(255, 134, 133, 133),
+                color: Color.fromARGB(255, 108, 108, 108),
               ),
             ),
 

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:silentvoice/screens/user_pin_screen.dart';
 import 'package:silentvoice/auth/auth_service.dart';
+import 'package:silentvoice/security/app_lock_controller.dart';
 
 class HelperLoginScreen extends StatefulWidget {
   const HelperLoginScreen({super.key});
@@ -15,6 +16,21 @@ class _HelperLoginScreenState extends State<HelperLoginScreen> {
   bool isLoading = false;
   String? errorMessage;
   final AuthService _authService = AuthService();
+  final FocusNode _emailFocusNode = FocusNode();
+
+  bool _obscurePassword = true;
+  @override
+  void initState() {
+    super.initState();
+
+    _emailFocusNode.addListener(() {
+      if (_emailFocusNode.hasFocus) {
+        AppLockController.allowBackground = true;
+      } else {
+        AppLockController.allowBackground = false;
+      }
+    });
+  }
 
   bool get isValid {
     return email.isNotEmpty && password.isNotEmpty;
@@ -70,6 +86,7 @@ class _HelperLoginScreenState extends State<HelperLoginScreen> {
             const SizedBox(height: 24),
 
             TextField(
+              focusNode: _emailFocusNode,
               keyboardType: TextInputType.emailAddress,
               onChanged: (value) {
                 setState(() {
@@ -87,17 +104,28 @@ class _HelperLoginScreenState extends State<HelperLoginScreen> {
             const SizedBox(height: 16),
 
             TextField(
-              obscureText: true,
+              obscureText: _obscurePassword,
               onChanged: (value) {
                 setState(() {
                   password = value;
                 });
               },
-              decoration: const InputDecoration(
+              decoration: InputDecoration(
                 labelText: 'Password',
                 hintText: 'Enter password',
                 prefixIcon: Icon(Icons.lock_outline),
+
                 border: OutlineInputBorder(),
+                suffixIcon: IconButton(
+                  icon: Icon(
+                    _obscurePassword ? Icons.visibility_off : Icons.visibility,
+                  ),
+                  onPressed: () {
+                    setState(() {
+                      _obscurePassword = !_obscurePassword;
+                    });
+                  },
+                ),
               ),
             ),
 
@@ -128,5 +156,11 @@ class _HelperLoginScreenState extends State<HelperLoginScreen> {
         ),
       ),
     );
+  }
+
+  @override
+  void dispose() {
+    _emailFocusNode.dispose();
+    super.dispose();
   }
 }

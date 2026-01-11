@@ -8,7 +8,6 @@ class AuthService {
       final result = await _auth.signInAnonymously();
       return result.user;
     } catch (e) {
-      print('Anonymous login failed: $e');
       return null;
     }
   }
@@ -21,7 +20,6 @@ class AuthService {
       );
       return result.user;
     } catch (e) {
-      print('Helper login failed: $e');
       return null;
     }
   }

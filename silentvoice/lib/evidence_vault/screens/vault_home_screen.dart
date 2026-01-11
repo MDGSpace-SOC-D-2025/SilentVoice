@@ -81,18 +81,15 @@ class _VaultHomeScreenState extends State<VaultHomeScreen> {
                   onDelete: () async {
                     final item = evidenceList[index];
 
-                    // 1️⃣ Delete encrypted file
                     final file = File(item.encryptedPath);
                     if (await file.exists()) {
                       await file.delete();
                     }
 
-                    // 2️⃣ Remove metadata from list
                     setState(() {
                       evidenceList.removeAt(index);
                     });
 
-                    // 3️⃣ Persist updated metadata
                     await repository.saveEvidence(evidenceList);
                   },
                 );

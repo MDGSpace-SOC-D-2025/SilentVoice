@@ -1,4 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:silentvoice/anonymous_chat/screens/start_chat_screen.dart';
+import 'package:silentvoice/emergency_sos/screens/emergency_sos_screen.dart';
+import 'package:silentvoice/evidence_vault/screens/vault_lock_screen.dart';
+import 'package:silentvoice/nearby_help_map/screens/nearby_help_screen.dart';
+import 'package:silentvoice/screens/settings_screen.dart';
 import 'calculator_screen.dart';
 import 'know_your_rights_main.dart';
 
@@ -19,7 +24,12 @@ class HiddenDashboardScreen extends StatelessWidget {
 
                   IconButton(
                     icon: const Icon(Icons.settings, size: 32),
-                    onPressed: () {},
+                    onPressed: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (_) => SettingsScreen()),
+                      );
+                    },
                   ),
                   SizedBox(width: 2),
 
@@ -44,24 +54,39 @@ class HiddenDashboardScreen extends StatelessWidget {
                 padding: const EdgeInsets.symmetric(horizontal: 16),
                 children: [
                   DashboardPillButton(
-                    title: 'Anomynous Chat',
+                    title: 'Anonymous Chat',
                     gradient: const [Color(0xFF5C9DFF), Color(0xFF8BB8FF)],
                     icon: Icons.chat_bubble_outline,
-                    onTap: () {},
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (_) => StartChatScreen()),
+                      );
+                    },
                   ),
                   const SizedBox(height: 24),
                   DashboardPillButton(
                     title: 'Emergency SOS',
                     gradient: const [Color(0xFFFFB347), Color(0xFFFFCC80)],
                     icon: Icons.warning_amber_rounded,
-                    onTap: () {},
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (_) => EmergencySosScreen()),
+                      );
+                    },
                   ),
                   const SizedBox(height: 24),
                   DashboardPillButton(
                     title: ' Evidence Vault',
                     gradient: const [Color(0xFF9C7CFF), Color(0xFFC3B1FF)],
                     icon: Icons.lock_outline,
-                    onTap: () {},
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (_) => VaultLockScreen()),
+                      );
+                    },
                   ),
                   const SizedBox(height: 24),
 
@@ -69,7 +94,14 @@ class HiddenDashboardScreen extends StatelessWidget {
                     title: 'Nearby Help Map',
                     icon: Icons.location_on_outlined,
                     gradient: const [Color(0xFF5FD38D), Color(0xFF9BE7B2)],
-                    onTap: () {},
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => const NearbyHelpScreen(),
+                        ),
+                      );
+                    },
                   ),
                   const SizedBox(height: 24),
 

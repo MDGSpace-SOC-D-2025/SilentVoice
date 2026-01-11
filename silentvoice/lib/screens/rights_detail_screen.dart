@@ -8,7 +8,7 @@ const Color _headingColor = Color.fromARGB(255, 4, 106, 94);
 class RightsDetailScreen extends StatelessWidget {
   final String sectionKey;
 
-  RightsDetailScreen({super.key, required this.sectionKey});
+  const RightsDetailScreen({super.key, required this.sectionKey});
 
   Future<Map<String, dynamic>> _loadRightsData() async {
     final String jsonString = await rootBundle.loadString(
@@ -52,7 +52,6 @@ class RightsDetailScreen extends StatelessWidget {
                 ...content.map((text) {
                   final String line = text.toString();
 
-                  // Headings (no bullet, bold)
                   if (line.endsWith(':')) {
                     return Padding(
                       padding: const EdgeInsets.only(top: 20, bottom: 8),
@@ -67,7 +66,6 @@ class RightsDetailScreen extends StatelessWidget {
                     );
                   }
 
-                  // Closing or important statements (no bullet)
                   if (line.startsWith('If ') ||
                       line.startsWith('Remember') ||
                       line.startsWith('Everyone') ||
@@ -82,11 +80,11 @@ class RightsDetailScreen extends StatelessWidget {
                       ),
                     );
                   }
-                  // Helpline numbers
+
                   if (line.contains('—')) {
                     return _helplineRow(line);
                   }
-                  // Bullet points
+
                   return _bulletPoint(line);
                 }),
               ],

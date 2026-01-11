@@ -11,7 +11,9 @@ void main() async {
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
 
   final AuthService authService = AuthService();
-  await authService.signInAnonymously();
+  if (authService.currentUser == null) {
+    await authService.signInAnonymously();
+  }
 
   AppLifecycleHandler().start();
 

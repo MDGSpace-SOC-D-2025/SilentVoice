@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:silentvoice/screens/calculator_screen.dart';
 
 class QuickExitButton extends StatelessWidget {
-  QuickExitButton({super.key});
+  const QuickExitButton({super.key});
 
   @override
   Widget build(BuildContext context) {
