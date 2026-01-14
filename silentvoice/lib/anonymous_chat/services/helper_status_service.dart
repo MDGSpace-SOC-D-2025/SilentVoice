@@ -8,9 +8,8 @@ class HelperStatusService {
   Future<void> setOffline() async {
     final uid = FirebaseAuth.instance.currentUser!.uid;
 
-    await FirebaseFirestore.instance.collection('helpers').doc(uid).update({
+    await _firestore.collection('helpers').doc(uid).update({
       'isOnline': false,
-      'isBusy': false,
       'lastActive': FieldValue.serverTimestamp(),
     });
   }
@@ -20,7 +19,6 @@ class HelperStatusService {
 
     await _firestore.collection('helpers').doc(uid).update({
       'isOnline': true,
-      'isBusy': false,
       'lastActive': FieldValue.serverTimestamp(),
     });
   }

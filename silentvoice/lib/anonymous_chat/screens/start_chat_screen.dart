@@ -1,8 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-
-import 'package:silentvoice/anonymous_chat/services/chat_assignment_service.dart';
+import 'package:silentvoice/anonymous_chat/screens/user_chat_screen.dart';
 
 class StartChatScreen extends StatelessWidget {
   const StartChatScreen({super.key});
@@ -15,37 +14,27 @@ class StartChatScreen extends StatelessWidget {
         child: ElevatedButton(
           child: const Text('Start Chat'),
           onPressed: () async {
-            final chatId = await ChatAssignmentService().assignHelperToUser();
-            if (chatId == null) {
-              final userId = FirebaseAuth.instance.currentUser!.uid;
+            final userId = FirebaseAuth.instance.currentUser!.uid;
 
-              final existingRequest = await FirebaseFirestore.instance
-                  .collection('chat_requests')
-                  .where('userId', isEqualTo: userId)
-                  .where('status', isEqualTo: 'waiting')
-                  .limit(1)
-                  .get();
+            final existing = await FirebaseFirestore.instance
+                .collection('chat_requests')
+                .where('userId', isEqualTo: userId)
+                .where('status', isEqualTo: 'waiting')
+                .limit(1)
+                .get();
 
-              if (existingRequest.docs.isEmpty) {
-                await FirebaseFirestore.instance
-                    .collection('chat_requests')
-                    .add({
-                      'userId': userId,
-                      'status': 'waiting',
-                      'createdAt': FieldValue.serverTimestamp(),
-                    });
-              }
-
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(
-                  content: Text('A helper will connect with you shortly'),
-                ),
-              );
-            } else {
-              ScaffoldMessenger.of(
-                context,
-              ).showSnackBar(SnackBar(content: Text('Chat created: $chatId')));
+            if (existing.docs.isEmpty) {
+              await FirebaseFirestore.instance.collection('chat_requests').add({
+                'userId': userId,
+                'status': 'waiting',
+                'createdAt': FieldValue.serverTimestamp(),
+              });
             }
+
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (_) => const UserChatScreen()),
+            );
           },
         ),
       ),

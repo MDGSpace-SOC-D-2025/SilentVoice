@@ -14,9 +14,7 @@ class ChatRequestService {
         .limit(1)
         .get();
 
-    if (requestSnapshot.docs.isEmpty) {
-      return null;
-    }
+    if (requestSnapshot.docs.isEmpty) return null;
 
     final requestDoc = requestSnapshot.docs.first;
     final userId = requestDoc['userId'];
