@@ -15,6 +15,7 @@ class _HelperChatScreenState extends State<HelperChatScreen> {
   String? _chatId;
   final TextEditingController _controller = TextEditingController();
   final MessageService _messageService = MessageService();
+  final ChatLifecycleService _lifecycleService = ChatLifecycleService();
 
   @override
   void initState() {
@@ -23,11 +24,11 @@ class _HelperChatScreenState extends State<HelperChatScreen> {
   }
 
   Future<void> _loadActiveChat() async {
-    final uid = FirebaseAuth.instance.currentUser!.uid;
+    final helperId = FirebaseAuth.instance.currentUser!.uid;
 
     final snapshot = await FirebaseFirestore.instance
         .collection('chats')
-        .where('helperId', isEqualTo: uid)
+        .where('helperId', isEqualTo: helperId)
         .where('status', isEqualTo: 'active')
         .limit(1)
         .get();
@@ -40,6 +41,12 @@ class _HelperChatScreenState extends State<HelperChatScreen> {
   }
 
   @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     if (_chatId == null) {
       return const Scaffold(body: Center(child: Text('No active chat')));
@@ -48,18 +55,20 @@ class _HelperChatScreenState extends State<HelperChatScreen> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Active Chat'),
+        automaticallyImplyLeading: false,
         actions: [
-          IconButton(
-            icon: const Icon(Icons.close),
+          TextButton(
             onPressed: () async {
-              await ChatLifecycleService().endChat(
-                chatId: _chatId!,
-                helperId: FirebaseAuth.instance.currentUser!.uid,
-              );
+              await _lifecycleService.endChat(_chatId!);
+
               if (mounted) {
                 Navigator.pop(context);
               }
             },
+            child: const Text(
+              'End Chat',
+              style: TextStyle(color: Colors.white),
+            ),
           ),
         ],
       ),
@@ -115,11 +124,12 @@ class _HelperChatScreenState extends State<HelperChatScreen> {
                 IconButton(
                   icon: const Icon(Icons.send),
                   onPressed: () async {
-                    if (_controller.text.trim().isEmpty) return;
+                    final text = _controller.text.trim();
+                    if (text.isEmpty) return;
 
                     await _messageService.sendMessage(
                       chatId: _chatId!,
-                      text: _controller.text.trim(),
+                      text: text,
                       sender: 'helper',
                     );
 
