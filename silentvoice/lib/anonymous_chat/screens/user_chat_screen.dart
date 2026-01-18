@@ -10,146 +10,213 @@ class UserChatScreen extends StatefulWidget {
   State<UserChatScreen> createState() => _UserChatScreenState();
 }
 
-class _UserChatScreenState extends State<UserChatScreen> {
-  final TextEditingController _controller = TextEditingController();
+class _UserChatScreenState extends State<UserChatScreen>
+    with WidgetsBindingObserver {
   final MessageService _messageService = MessageService();
+  final TextEditingController _controller = TextEditingController();
 
-  Stream<String?> activeChatIdStream() {
-    final uid = FirebaseAuth.instance.currentUser!.uid;
+  String get uid => FirebaseAuth.instance.currentUser!.uid;
 
+  Stream<QuerySnapshot> activeChatStream() {
     return FirebaseFirestore.instance
         .collection('chats')
         .where('userId', isEqualTo: uid)
         .where('status', isEqualTo: 'active')
         .limit(1)
-        .snapshots()
-        .map((snapshot) {
-          if (snapshot.docs.isEmpty) return null;
-          return snapshot.docs.first.id;
-        });
+        .snapshots();
+  }
+
+  Stream<QuerySnapshot> requestStream() {
+    return FirebaseFirestore.instance
+        .collection('chat_requests')
+        .where('userId', isEqualTo: uid)
+        .where('status', isEqualTo: 'waiting')
+        .limit(1)
+        .snapshots();
+  }
+
+  Future<void> _cancelWaitingRequest() async {
+    final snap = await FirebaseFirestore.instance
+        .collection('chat_requests')
+        .where('userId', isEqualTo: uid)
+        .where('status', isEqualTo: 'waiting')
+        .limit(1)
+        .get();
+
+    if (snap.docs.isNotEmpty) {
+      await snap.docs.first.reference.update({
+        'status': 'cancelled',
+        'lastSeen': FieldValue.serverTimestamp(),
+      });
+    }
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addObserver(this);
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.paused ||
+        state == AppLifecycleState.detached) {
+      _cancelWaitingRequest();
+    }
   }
 
   @override
   void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
     _controller.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    return StreamBuilder<String?>(
-      stream: activeChatIdStream(),
-      builder: (context, snapshot) {
-        if (snapshot.connectionState == ConnectionState.waiting) {
-          return const Scaffold(
-            body: Center(child: CircularProgressIndicator()),
-          );
-        }
-
-        final chatId = snapshot.data;
-
-        if (chatId == null) {
-          return const Scaffold(
-            body: Center(
-              child: Text(
-                'Waiting for a helper...',
-                style: TextStyle(fontSize: 18),
-              ),
-            ),
-          );
+    return StreamBuilder<QuerySnapshot>(
+      stream: activeChatStream(),
+      builder: (context, chatSnapshot) {
+        if (chatSnapshot.hasData && chatSnapshot.data!.docs.isNotEmpty) {
+          final chatId = chatSnapshot.data!.docs.first.id;
+          return _buildChatUI(chatId);
         }
 
         return PopScope(
           canPop: true,
           onPopInvokedWithResult: (didPop, result) async {
             if (didPop) {
-              await FirebaseFirestore.instance
-                  .collection('chats')
-                  .doc(chatId)
-                  .update({
-                    'status': 'closed',
-                    'endedAt': FieldValue.serverTimestamp(),
-                  });
+              await _cancelWaitingRequest();
             }
           },
-          child: Scaffold(
-            appBar: AppBar(
-              title: const Text('Anonymous Chat'),
-              automaticallyImplyLeading: false,
-            ),
-            body: Column(
-              children: [
-                Expanded(
-                  child: StreamBuilder(
-                    stream: _messageService.messageStream(chatId),
-                    builder: (context, snapshot) {
-                      if (!snapshot.hasData) {
-                        return const Center(child: CircularProgressIndicator());
-                      }
-
-                      final messages = snapshot.data!.docs;
-
-                      return ListView.builder(
-                        itemCount: messages.length,
-                        itemBuilder: (context, index) {
-                          final data = messages[index];
-                          final isUser = data['sender'] == 'user';
-
-                          return Align(
-                            alignment: isUser
-                                ? Alignment.centerRight
-                                : Alignment.centerLeft,
-                            child: Container(
-                              margin: const EdgeInsets.all(8),
-                              padding: const EdgeInsets.all(12),
-                              decoration: BoxDecoration(
-                                color: isUser
-                                    ? Colors.green[200]
-                                    : Colors.grey[300],
-                                borderRadius: BorderRadius.circular(8),
-                              ),
-                              child: Text(data['text']),
-                            ),
-                          );
-                        },
-                      );
-                    },
+          child: StreamBuilder<QuerySnapshot>(
+            stream: requestStream(),
+            builder: (context, requestSnapshot) {
+              if (requestSnapshot.hasData &&
+                  requestSnapshot.data!.docs.isNotEmpty) {
+                return const Scaffold(
+                  body: Center(
+                    child: Text(
+                      'A helper will connect with you shortly...',
+                      style: TextStyle(fontSize: 18),
+                    ),
                   ),
-                ),
-                Padding(
-                  padding: const EdgeInsets.all(8),
-                  child: Row(
+                );
+              }
+
+              return Scaffold(
+                body: Center(
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
                     children: [
-                      Expanded(
-                        child: TextField(
-                          controller: _controller,
-                          decoration: const InputDecoration(
-                            hintText: 'Type a message',
-                          ),
-                        ),
-                      ),
-                      IconButton(
-                        icon: const Icon(Icons.send),
-                        onPressed: () async {
-                          if (_controller.text.trim().isEmpty) return;
-
-                          await _messageService.sendMessage(
-                            chatId: chatId,
-                            text: _controller.text.trim(),
-                            sender: 'user',
-                          );
-
-                          _controller.clear();
-                        },
+                      const Text('Chat ended.', style: TextStyle(fontSize: 18)),
+                      const SizedBox(height: 20),
+                      ElevatedButton(
+                        onPressed: () => Navigator.pop(context),
+                        child: const Text('Start New Chat'),
                       ),
                     ],
                   ),
                 ),
-              ],
-            ),
+              );
+            },
           ),
         );
       },
+    );
+  }
+
+  Widget _buildChatUI(String chatId) {
+    return PopScope(
+      canPop: true,
+      onPopInvokedWithResult: (didPop, result) async {
+        if (didPop) {
+          await FirebaseFirestore.instance
+              .collection('chats')
+              .doc(chatId)
+              .update({
+                'status': 'closed',
+                'endedAt': FieldValue.serverTimestamp(),
+                'endedBy': 'user',
+              });
+        }
+      },
+      child: Scaffold(
+        appBar: AppBar(
+          title: const Text('Anonymous Chat'),
+          automaticallyImplyLeading: false,
+        ),
+        body: Column(
+          children: [
+            Expanded(
+              child: StreamBuilder(
+                stream: _messageService.messageStream(chatId),
+                builder: (context, snapshot) {
+                  if (!snapshot.hasData) {
+                    return const Center(child: CircularProgressIndicator());
+                  }
+
+                  final messages = snapshot.data!.docs;
+
+                  return ListView.builder(
+                    itemCount: messages.length,
+                    itemBuilder: (context, index) {
+                      final msg = messages[index];
+                      final isUser = msg['sender'] == 'user';
+
+                      return Align(
+                        alignment: isUser
+                            ? Alignment.centerRight
+                            : Alignment.centerLeft,
+                        child: Container(
+                          margin: const EdgeInsets.all(8),
+                          padding: const EdgeInsets.all(12),
+                          decoration: BoxDecoration(
+                            color: isUser
+                                ? Colors.green[200]
+                                : Colors.grey[300],
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          child: Text(msg['text']),
+                        ),
+                      );
+                    },
+                  );
+                },
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.all(8),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: TextField(
+                      controller: _controller,
+                      decoration: const InputDecoration(
+                        hintText: 'Type a message',
+                      ),
+                    ),
+                  ),
+                  IconButton(
+                    icon: const Icon(Icons.send),
+                    onPressed: () async {
+                      final text = _controller.text.trim();
+                      if (text.isEmpty) return;
+
+                      await _messageService.sendMessage(
+                        chatId: chatId,
+                        text: text,
+                        sender: 'user',
+                      );
+                      _controller.clear();
+                    },
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 }

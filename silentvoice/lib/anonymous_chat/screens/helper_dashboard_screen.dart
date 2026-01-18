@@ -2,7 +2,6 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:silentvoice/anonymous_chat/screens/helper_chat_screen.dart';
-
 import 'package:silentvoice/anonymous_chat/services/chat_request_service.dart';
 import 'package:silentvoice/anonymous_chat/services/helper_status_service.dart';
 
@@ -16,6 +15,16 @@ class HelperDashboardScreen extends StatefulWidget {
 class _HelperDashboardScreenState extends State<HelperDashboardScreen>
     with WidgetsBindingObserver {
   final HelperStatusService _statusService = HelperStatusService();
+  final String _uid = FirebaseAuth.instance.currentUser!.uid;
+
+  Stream<QuerySnapshot> activeChatStream() {
+    return FirebaseFirestore.instance
+        .collection('chats')
+        .where('helperId', isEqualTo: _uid)
+        .where('status', isEqualTo: 'active')
+        .limit(1)
+        .snapshots();
+  }
 
   Stream<int> pendingRequestCount() {
     return FirebaseFirestore.instance
@@ -23,6 +32,13 @@ class _HelperDashboardScreenState extends State<HelperDashboardScreen>
         .where('status', isEqualTo: 'waiting')
         .snapshots()
         .map((snapshot) => snapshot.docs.length);
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addObserver(this);
+    _statusService.setOnline();
   }
 
   @override
@@ -35,35 +51,6 @@ class _HelperDashboardScreenState extends State<HelperDashboardScreen>
     }
   }
 
-  Future<void> _checkActiveChat(BuildContext context) async {
-    final uid = FirebaseAuth.instance.currentUser!.uid;
-
-    final snapshot = await FirebaseFirestore.instance
-        .collection('chats')
-        .where('helperId', isEqualTo: uid)
-        .where('status', isEqualTo: 'active')
-        .limit(1)
-        .get();
-
-    if (snapshot.docs.isNotEmpty && mounted) {
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (_) => const HelperChatScreen()),
-      );
-    }
-  }
-
-  @override
-  void initState() {
-    super.initState();
-    WidgetsBinding.instance.addObserver(this);
-    _statusService.setOnline();
-
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      _checkActiveChat(context);
-    });
-  }
-
   @override
   Widget build(BuildContext context) {
     return PopScope(
@@ -73,48 +60,66 @@ class _HelperDashboardScreenState extends State<HelperDashboardScreen>
           _statusService.setOffline();
         }
       },
-
       child: Scaffold(
         appBar: AppBar(
           title: const Text('Dashboard'),
           automaticallyImplyLeading: false,
         ),
-        body: Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              StreamBuilder<int>(
-                stream: pendingRequestCount(),
-                builder: (context, snapshot) {
-                  final count = snapshot.data ?? 0;
-                  return Text(
-                    'Pending requests: $count',
-                    style: const TextStyle(fontSize: 18),
-                  );
-                },
-              ),
-              const SizedBox(height: 20),
-              ElevatedButton(
-                onPressed: () async {
-                  final chatId = await ChatRequestService().takeNextUser();
 
-                  if (chatId == null) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text('No pending requests')),
-                    );
-                  } else {
-                    Navigator.pushReplacement(
-                      context,
-                      MaterialPageRoute(
-                        builder: (_) => const HelperChatScreen(),
-                      ),
-                    );
-                  }
-                },
-                child: const Text('Take Next User'),
+        body: StreamBuilder<QuerySnapshot>(
+          stream: activeChatStream(),
+          builder: (context, chatSnapshot) {
+            if (chatSnapshot.hasData && chatSnapshot.data!.docs.isNotEmpty) {
+              WidgetsBinding.instance.addPostFrameCallback((_) {
+                Navigator.pushReplacement(
+                  context,
+                  MaterialPageRoute(builder: (_) => const HelperChatScreen()),
+                );
+              });
+
+              return const Center(child: CircularProgressIndicator());
+            }
+            return Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  StreamBuilder<int>(
+                    stream: pendingRequestCount(),
+                    builder: (context, snapshot) {
+                      final count = snapshot.data ?? 0;
+
+                      return Text(
+                        count == 0
+                            ? 'No users are waiting right now.'
+                            : 'Pending requests: $count',
+                        style: const TextStyle(fontSize: 18),
+                      );
+                    },
+                  ),
+                  const SizedBox(height: 20),
+                  ElevatedButton(
+                    onPressed: () async {
+                      final chatId = await ChatRequestService().takeNextUser();
+
+                      if (chatId == null) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(content: Text('No pending requests')),
+                        );
+                      } else {
+                        Navigator.pushReplacement(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => const HelperChatScreen(),
+                          ),
+                        );
+                      }
+                    },
+                    child: const Text('Take Next User'),
+                  ),
+                ],
               ),
-            ],
-          ),
+            );
+          },
         ),
       ),
     );

@@ -7,17 +7,25 @@ class ChatRequestService {
   Future<String?> takeNextUser() async {
     final helperId = FirebaseAuth.instance.currentUser!.uid;
 
-    final requestSnapshot = await _firestore
+    final snapshot = await _firestore
         .collection('chat_requests')
         .where('status', isEqualTo: 'waiting')
         .orderBy('createdAt')
         .limit(1)
         .get();
 
-    if (requestSnapshot.docs.isEmpty) return null;
+    if (snapshot.docs.isEmpty) return null;
 
-    final requestDoc = requestSnapshot.docs.first;
-    final userId = requestDoc['userId'];
+    final requestDoc = snapshot.docs.first;
+    final data = requestDoc.data();
+    final userId = data['userId'];
+
+    final lastSeen = (data['lastSeen'] as Timestamp?)?.toDate();
+    if (lastSeen != null &&
+        DateTime.now().difference(lastSeen).inSeconds > 15) {
+      await requestDoc.reference.update({'status': 'expired'});
+      return null;
+    }
 
     final chatRef = await _firestore.collection('chats').add({
       'userId': userId,
@@ -25,9 +33,13 @@ class ChatRequestService {
       'status': 'active',
       'createdAt': FieldValue.serverTimestamp(),
       'endedAt': null,
+      'endedBy': null,
     });
 
     await requestDoc.reference.update({'status': 'assigned'});
+    await _firestore.collection('helpers').doc(helperId).update({
+      'isBusy': true,
+    });
 
     return chatRef.id;
   }
