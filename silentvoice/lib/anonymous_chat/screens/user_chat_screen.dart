@@ -2,6 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:silentvoice/anonymous_chat/services/message_service.dart';
+import 'package:silentvoice/anonymous_chat/services/chat_encryption_service.dart';
 
 class UserChatScreen extends StatefulWidget {
   const UserChatScreen({super.key});
@@ -13,6 +14,7 @@ class UserChatScreen extends StatefulWidget {
 class _UserChatScreenState extends State<UserChatScreen>
     with WidgetsBindingObserver {
   final MessageService _messageService = MessageService();
+  final ChatEncryptionService _encryption = ChatEncryptionService();
   final TextEditingController _controller = TextEditingController();
 
   String get uid => FirebaseAuth.instance.currentUser!.uid;
@@ -85,9 +87,7 @@ class _UserChatScreenState extends State<UserChatScreen>
         return PopScope(
           canPop: true,
           onPopInvokedWithResult: (didPop, result) async {
-            if (didPop) {
-              await _cancelWaitingRequest();
-            }
+            if (didPop) await _cancelWaitingRequest();
           },
           child: StreamBuilder<QuerySnapshot>(
             stream: requestStream(),
@@ -161,8 +161,17 @@ class _UserChatScreenState extends State<UserChatScreen>
                   return ListView.builder(
                     itemCount: messages.length,
                     itemBuilder: (context, index) {
-                      final msg = messages[index];
-                      final isUser = msg['sender'] == 'user';
+                      final data =
+                          messages[index].data() as Map<String, dynamic>;
+                      final isUser = data['sender'] == 'user';
+                      final isEncrypted = data['encrypted'] == true;
+
+                      final text = isEncrypted
+                          ? _encryption.decryptText(
+                              chatId: chatId,
+                              cipherText: data['text'],
+                            )
+                          : data['text'];
 
                       return Align(
                         alignment: isUser
@@ -177,7 +186,7 @@ class _UserChatScreenState extends State<UserChatScreen>
                                 : Colors.grey[300],
                             borderRadius: BorderRadius.circular(8),
                           ),
-                          child: Text(msg['text']),
+                          child: Text(text),
                         ),
                       );
                     },
@@ -200,14 +209,15 @@ class _UserChatScreenState extends State<UserChatScreen>
                   IconButton(
                     icon: const Icon(Icons.send),
                     onPressed: () async {
-                      final text = _controller.text.trim();
-                      if (text.isEmpty) return;
+                      final plainText = _controller.text.trim();
+                      if (plainText.isEmpty) return;
 
                       await _messageService.sendMessage(
                         chatId: chatId,
-                        text: text,
+                        text: plainText,
                         sender: 'user',
                       );
+
                       _controller.clear();
                     },
                   ),

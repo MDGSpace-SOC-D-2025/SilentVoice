@@ -3,6 +3,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:silentvoice/anonymous_chat/screens/helper_dashboard_screen.dart';
 import 'package:silentvoice/anonymous_chat/services/chat_lifecycle_service.dart';
+import 'package:silentvoice/anonymous_chat/services/chat_encryption_service.dart';
 import 'package:silentvoice/anonymous_chat/services/message_service.dart';
 
 class HelperChatScreen extends StatefulWidget {
@@ -17,6 +18,7 @@ class _HelperChatScreenState extends State<HelperChatScreen> {
   final TextEditingController _controller = TextEditingController();
   final MessageService _messageService = MessageService();
   final ChatLifecycleService _lifecycleService = ChatLifecycleService();
+  final ChatEncryptionService _encryption = ChatEncryptionService();
 
   @override
   void initState() {
@@ -35,9 +37,7 @@ class _HelperChatScreenState extends State<HelperChatScreen> {
         .get();
 
     if (snapshot.docs.isNotEmpty && mounted) {
-      setState(() {
-        _chatId = snapshot.docs.first.id;
-      });
+      setState(() => _chatId = snapshot.docs.first.id);
     }
   }
 
@@ -58,22 +58,16 @@ class _HelperChatScreenState extends State<HelperChatScreen> {
           .collection('chats')
           .doc(_chatId)
           .snapshots(),
-      builder: (context, snapshot) {
-        if (!snapshot.hasData) {
+      builder: (context, chatSnapshot) {
+        if (!chatSnapshot.hasData) {
           return const Scaffold(
             body: Center(child: CircularProgressIndicator()),
           );
         }
 
-        final data = snapshot.data!.data() as Map<String, dynamic>;
-        final status = data['status'];
-        final endedBy = data['endedBy'];
+        final chatData = chatSnapshot.data!.data() as Map<String, dynamic>;
 
-        if (status == 'closed') {
-          final message = endedBy == 'user'
-              ? 'The user is no longer present.'
-              : 'Chat ended.';
-
+        if (chatData['status'] == 'closed') {
           WidgetsBinding.instance.addPostFrameCallback((_) {
             Navigator.pushReplacement(
               context,
@@ -81,16 +75,13 @@ class _HelperChatScreenState extends State<HelperChatScreen> {
             );
           });
 
-          return Scaffold(
+          return const Scaffold(
             body: Center(
-              child: Text(
-                message,
-                style: const TextStyle(fontSize: 18),
-                textAlign: TextAlign.center,
-              ),
+              child: Text('Chat ended', style: TextStyle(fontSize: 18)),
             ),
           );
         }
+
         return Scaffold(
           appBar: AppBar(
             title: const Text('Active Chat'),
@@ -105,7 +96,7 @@ class _HelperChatScreenState extends State<HelperChatScreen> {
                 },
                 child: const Text(
                   'End Chat',
-                  style: TextStyle(color: Color.fromARGB(255, 243, 3, 3)),
+                  style: TextStyle(color: Colors.red),
                 ),
               ),
             ],
@@ -113,7 +104,7 @@ class _HelperChatScreenState extends State<HelperChatScreen> {
           body: Column(
             children: [
               Expanded(
-                child: StreamBuilder(
+                child: StreamBuilder<QuerySnapshot>(
                   stream: _messageService.messageStream(_chatId!),
                   builder: (context, snapshot) {
                     if (!snapshot.hasData) {
@@ -125,8 +116,17 @@ class _HelperChatScreenState extends State<HelperChatScreen> {
                     return ListView.builder(
                       itemCount: messages.length,
                       itemBuilder: (context, index) {
-                        final msg = messages[index];
-                        final isHelper = msg['sender'] == 'helper';
+                        final data =
+                            messages[index].data() as Map<String, dynamic>;
+                        final isHelper = data['sender'] == 'helper';
+                        final isEncrypted = data['encrypted'] == true;
+
+                        final text = isEncrypted
+                            ? _encryption.decryptText(
+                                chatId: _chatId!,
+                                cipherText: data['text'],
+                              )
+                            : data['text'];
 
                         return Align(
                           alignment: isHelper
@@ -141,7 +141,7 @@ class _HelperChatScreenState extends State<HelperChatScreen> {
                                   : Colors.grey[300],
                               borderRadius: BorderRadius.circular(8),
                             ),
-                            child: Text(msg['text']),
+                            child: Text(text),
                           ),
                         );
                       },
@@ -164,12 +164,12 @@ class _HelperChatScreenState extends State<HelperChatScreen> {
                     IconButton(
                       icon: const Icon(Icons.send),
                       onPressed: () async {
-                        final text = _controller.text.trim();
-                        if (text.isEmpty) return;
+                        final plainText = _controller.text.trim();
+                        if (plainText.isEmpty) return;
 
                         await _messageService.sendMessage(
                           chatId: _chatId!,
-                          text: text,
+                          text: plainText,
                           sender: 'helper',
                         );
 
