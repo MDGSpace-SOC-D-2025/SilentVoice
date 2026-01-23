@@ -47,6 +47,15 @@ class _HelperChatScreenState extends State<HelperChatScreen> {
     super.dispose();
   }
 
+  void _goToDashboard() {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (_) => const HelperDashboardScreen()),
+      );
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     if (_chatId == null) {
@@ -58,28 +67,34 @@ class _HelperChatScreenState extends State<HelperChatScreen> {
           .collection('chats')
           .doc(_chatId)
           .snapshots(),
-      builder: (context, chatSnapshot) {
-        if (!chatSnapshot.hasData) {
+      builder: (context, snapshot) {
+        if (!snapshot.hasData) {
           return const Scaffold(
             body: Center(child: CircularProgressIndicator()),
           );
         }
 
-        final chatData = chatSnapshot.data!.data() as Map<String, dynamic>;
+        final chatDoc = snapshot.data!;
 
-        if (chatData['status'] == 'closed') {
-          WidgetsBinding.instance.addPostFrameCallback((_) {
-            Navigator.pushReplacement(
-              context,
-              MaterialPageRoute(builder: (_) => const HelperDashboardScreen()),
-            );
-          });
-
+        if (!chatDoc.exists) {
+          _goToDashboard();
           return const Scaffold(
-            body: Center(
-              child: Text('Chat ended', style: TextStyle(fontSize: 18)),
-            ),
+            body: Center(child: Text('Chat deleted by user')),
           );
+        }
+
+        final chatData = chatDoc.data() as Map<String, dynamic>;
+
+        if (chatData['status'] != 'active') {
+          _goToDashboard();
+          return const Scaffold(body: Center(child: Text('Chat ended')));
+        }
+
+        final expiresAt = (chatData['expiresAt'] as Timestamp).toDate();
+
+        if (DateTime.now().isAfter(expiresAt)) {
+          _goToDashboard();
+          return const Scaffold(body: Center(child: Text('Chat expired')));
         }
 
         return Scaffold(
@@ -119,14 +134,11 @@ class _HelperChatScreenState extends State<HelperChatScreen> {
                         final data =
                             messages[index].data() as Map<String, dynamic>;
                         final isHelper = data['sender'] == 'helper';
-                        final isEncrypted = data['encrypted'] == true;
 
-                        final text = isEncrypted
-                            ? _encryption.decryptText(
-                                chatId: _chatId!,
-                                cipherText: data['text'],
-                              )
-                            : data['text'];
+                        final text = _encryption.decryptText(
+                          chatId: _chatId!,
+                          cipherText: data['text'],
+                        );
 
                         return Align(
                           alignment: isHelper

@@ -26,7 +26,9 @@ class ChatRequestService {
       await requestDoc.reference.update({'status': 'expired'});
       return null;
     }
-
+    final retentionDays = data['retentionDays'] ?? 7;
+    final DateTime now = DateTime.now();
+    final DateTime expiresAt = now.add(Duration(days: retentionDays));
     final chatRef = await _firestore.collection('chats').add({
       'userId': userId,
       'helperId': helperId,
@@ -34,6 +36,9 @@ class ChatRequestService {
       'createdAt': FieldValue.serverTimestamp(),
       'endedAt': null,
       'endedBy': null,
+
+      'retentionDays': retentionDays,
+      'expiresAt': Timestamp.fromDate(expiresAt),
     });
 
     await requestDoc.reference.update({'status': 'assigned'});

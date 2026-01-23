@@ -80,8 +80,28 @@ class _UserChatScreenState extends State<UserChatScreen>
       stream: activeChatStream(),
       builder: (context, chatSnapshot) {
         if (chatSnapshot.hasData && chatSnapshot.data!.docs.isNotEmpty) {
-          final chatId = chatSnapshot.data!.docs.first.id;
-          return _buildChatUI(chatId);
+          final chatDoc = chatSnapshot.data!.docs.first;
+          final chatId = chatDoc.id;
+          final chatData = chatDoc.data() as Map<String, dynamic>;
+
+          if (chatData['status'] != 'active') {
+            return const Scaffold(
+              body: Center(
+                child: Text('Chat ended.', style: TextStyle(fontSize: 18)),
+              ),
+            );
+          }
+
+          final expiresAt = (chatData['expiresAt'] as Timestamp).toDate();
+
+          if (DateTime.now().isAfter(expiresAt)) {
+            return const Scaffold(
+              body: Center(
+                child: Text('Chat ended.', style: TextStyle(fontSize: 18)),
+              ),
+            );
+          }
+          return _buildChatUI(chatId, expiresAt);
         }
 
         return PopScope(
@@ -126,7 +146,7 @@ class _UserChatScreenState extends State<UserChatScreen>
     );
   }
 
-  Widget _buildChatUI(String chatId) {
+  Widget _buildChatUI(String chatId, DateTime expiresAt) {
     return PopScope(
       canPop: true,
       onPopInvokedWithResult: (didPop, result) async {
@@ -145,6 +165,46 @@ class _UserChatScreenState extends State<UserChatScreen>
         appBar: AppBar(
           title: const Text('Anonymous Chat'),
           automaticallyImplyLeading: false,
+          actions: [
+            IconButton(
+              icon: const Icon(Icons.delete, color: Colors.red),
+              onPressed: () async {
+                final confirm = await showDialog<bool>(
+                  context: context,
+                  builder: (context) => AlertDialog(
+                    title: const Text('Delete chat?'),
+                    content: const Text(
+                      'This will permanently delete the chat history.',
+                    ),
+                    actions: [
+                      TextButton(
+                        onPressed: () => Navigator.pop(context, false),
+                        child: const Text('Cancel'),
+                      ),
+                      TextButton(
+                        onPressed: () => Navigator.pop(context, true),
+                        child: const Text(
+                          'Delete',
+                          style: TextStyle(color: Colors.red),
+                        ),
+                      ),
+                    ],
+                  ),
+                );
+
+                if (confirm != true) return;
+
+                await FirebaseFirestore.instance
+                    .collection('chats')
+                    .doc(chatId)
+                    .delete();
+
+                if (context.mounted) {
+                  Navigator.pop(context);
+                }
+              },
+            ),
+          ],
         ),
         body: Column(
           children: [
@@ -209,6 +269,13 @@ class _UserChatScreenState extends State<UserChatScreen>
                   IconButton(
                     icon: const Icon(Icons.send),
                     onPressed: () async {
+                      if (DateTime.now().isAfter(expiresAt)) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(content: Text('Chat has expired')),
+                        );
+                        return;
+                      }
+
                       final plainText = _controller.text.trim();
                       if (plainText.isEmpty) return;
 
