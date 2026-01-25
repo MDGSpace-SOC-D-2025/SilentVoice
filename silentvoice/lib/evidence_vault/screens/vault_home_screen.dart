@@ -1,13 +1,12 @@
-import 'dart:io';
 import 'dart:typed_data';
 import 'package:flutter/material.dart';
 
 import 'package:silentvoice/evidence_vault/models/evidence_item.dart';
 import 'package:silentvoice/evidence_vault/repository/evidence_repository.dart';
-import 'package:silentvoice/evidence_vault/repository/local_evidence_repository.dart';
+import 'package:silentvoice/evidence_vault/repository/cloud_evidence_repository.dart';
 import 'package:silentvoice/evidence_vault/widgets/empty_vault_view.dart';
 import 'package:silentvoice/evidence_vault/widgets/evidence_tile.dart';
-import 'package:silentvoice/evidence_vault/SCREENS/add_evidence_sheet.dart';
+import 'package:silentvoice/evidence_vault/screens/add_evidence_sheet.dart';
 import 'package:silentvoice/widgets/quick_exit_appbar_action.dart';
 
 class VaultHomeScreen extends StatefulWidget {
@@ -23,12 +22,13 @@ class _VaultHomeScreenState extends State<VaultHomeScreen> {
   late final Uint8List encryptionKey;
   final List<EvidenceItem> evidenceList = [];
 
-  final EvidenceRepository repository = LocalEvidenceRepository();
+  late final EvidenceRepository repository;
 
   @override
   void initState() {
     super.initState();
     encryptionKey = widget.encryptionKey;
+    repository = CloudEvidenceRepository();
     _loadEvidence();
   }
 
@@ -38,17 +38,29 @@ class _VaultHomeScreenState extends State<VaultHomeScreen> {
     if (!mounted) return;
 
     setState(() {
-      evidenceList.clear();
-      evidenceList.addAll(stored);
+      evidenceList
+        ..clear()
+        ..addAll(stored);
     });
   }
 
-  Future<void> _addEvidence(EvidenceItem item) async {
+  void _onEvidenceAdded(EvidenceItem item) {
+    if (!mounted) return;
     setState(() {
-      evidenceList.add(item);
+      evidenceList.insert(0, item);
     });
+  }
 
-    await repository.saveEvidence(evidenceList);
+  Future<void> _deleteEvidence(int index) async {
+    final item = evidenceList[index];
+
+    await repository.deleteEvidence(item);
+
+    if (!mounted) return;
+
+    setState(() {
+      evidenceList.removeAt(index);
+    });
   }
 
   @override
@@ -56,17 +68,20 @@ class _VaultHomeScreenState extends State<VaultHomeScreen> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Evidence Vault'),
-        actions: [QuickExitButton()],
+        actions: const [QuickExitButton()],
       ),
       floatingActionButton: FloatingActionButton(
-        onPressed: () {
+        onPressed: () async {
           showModalBottomSheet(
             context: context,
+            isScrollControlled: true,
             builder: (_) => AddEvidenceSheet(
               encryptionKey: encryptionKey,
-              onEvidenceAdded: _addEvidence,
+              repository: repository,
+              onEvidenceAdded: _onEvidenceAdded,
             ),
           );
+          await _loadEvidence();
         },
         child: const Icon(Icons.add),
       ),
@@ -78,20 +93,7 @@ class _VaultHomeScreenState extends State<VaultHomeScreen> {
                 return EvidenceTile(
                   item: evidenceList[index],
                   encryptionKey: encryptionKey,
-                  onDelete: () async {
-                    final item = evidenceList[index];
-
-                    final file = File(item.encryptedPath);
-                    if (await file.exists()) {
-                      await file.delete();
-                    }
-
-                    setState(() {
-                      evidenceList.removeAt(index);
-                    });
-
-                    await repository.saveEvidence(evidenceList);
-                  },
+                  onDelete: () => _deleteEvidence(index),
                 );
               },
             ),

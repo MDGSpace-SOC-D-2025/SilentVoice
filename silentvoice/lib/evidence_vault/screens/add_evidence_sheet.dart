@@ -4,6 +4,7 @@ import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:silentvoice/evidence_vault/models/evidence_item.dart';
+import 'package:silentvoice/evidence_vault/repository/evidence_repository.dart';
 import 'package:silentvoice/security/aes_crypto.dart';
 import 'package:silentvoice/security/app_lock_controller.dart';
 import 'package:image_picker/image_picker.dart';
@@ -12,11 +13,13 @@ import 'package:record/record.dart';
 
 class AddEvidenceSheet extends StatefulWidget {
   final Uint8List encryptionKey;
+  final EvidenceRepository repository;
   final void Function(EvidenceItem) onEvidenceAdded;
 
   const AddEvidenceSheet({
     super.key,
     required this.encryptionKey,
+    required this.repository,
     required this.onEvidenceAdded,
   });
 
@@ -27,44 +30,63 @@ class AddEvidenceSheet extends StatefulWidget {
 class _AddEvidenceSheetState extends State<AddEvidenceSheet> {
   final AudioRecorder _recorder = AudioRecorder();
   final ImagePicker _imagePicker = ImagePicker();
+  double uploadProgress = 0.0;
+  bool isUploading = false;
 
-  Future<void> _saveEncryptedEvidence({
+  Future<void> _encryptAndUploadEvidence({
     required File sourceFile,
     required EvidenceType type,
   }) async {
-    final rawBytes = await sourceFile.readAsBytes();
+    try {
+      setState(() {
+        isUploading = true;
+        uploadProgress = 0.0;
+      });
 
-    final encryptedBytes = AesCrypto.encrypt(
-      data: rawBytes,
-      key: widget.encryptionKey,
-    );
+      final rawBytes = await sourceFile.readAsBytes();
 
-    final dir = await getApplicationDocumentsDirectory();
-    final fileName = '${DateTime.now().millisecondsSinceEpoch}.enc';
-    final encryptedFile = File('${dir.path}/$fileName');
-
-    await encryptedFile.writeAsBytes(encryptedBytes);
-
-    final note = await _askForNote(context);
-
-    final item = EvidenceItem(
-      id: fileName,
-      type: type,
-      encryptedPath: encryptedFile.path,
-      createdAt: DateTime.now(),
-      note: note?.isEmpty == true ? null : note,
-    );
-
-    widget.onEvidenceAdded(item);
-    if (context.mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text(
-            'Evidence saved securely. If this file came from your device, you may now safely delete the original file if you wish.',
-          ),
-          duration: Duration(seconds: 4),
-        ),
+      final encryptedBytes = AesCrypto.encrypt(
+        data: rawBytes,
+        key: widget.encryptionKey,
       );
+
+      final tempDir = await getTemporaryDirectory();
+      final tempFile = File(
+        '${tempDir.path}/${DateTime.now().millisecondsSinceEpoch}.enc',
+      );
+
+      await tempFile.writeAsBytes(encryptedBytes);
+
+      final note = await _askForNote(context);
+
+      final item = await widget.repository.addEvidence(
+        type: type,
+        encryptedFilePath: tempFile.path,
+        note: note?.isEmpty == true ? null : note,
+        onProgress: (progress) {
+          if (mounted) {
+            setState(() => uploadProgress = progress);
+          }
+        },
+      );
+
+      if (await tempFile.exists()) {
+        await tempFile.delete();
+      }
+
+      widget.onEvidenceAdded(item);
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Evidence encrypted & uploaded securely.'),
+          ),
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() => isUploading = false);
+      }
     }
   }
 
@@ -239,6 +261,12 @@ class _AddEvidenceSheetState extends State<AddEvidenceSheet> {
               style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 16),
+            if (isUploading) ...[
+              const Text('Uploading securely...'),
+              const SizedBox(height: 8),
+              LinearProgressIndicator(value: uploadProgress),
+              const SizedBox(height: 16),
+            ],
 
             ListTile(
               leading: const Icon(Icons.image),
@@ -249,11 +277,10 @@ class _AddEvidenceSheetState extends State<AddEvidenceSheet> {
                   final file = await _pickImage();
                   if (file == null) return;
 
-                  await _saveEncryptedEvidence(
+                  await _encryptAndUploadEvidence(
                     sourceFile: file,
                     type: EvidenceType.image,
                   );
-
                   if (context.mounted) Navigator.pop(context);
                 } finally {
                   AppLockController.allowBackground = false;
@@ -270,8 +297,7 @@ class _AddEvidenceSheetState extends State<AddEvidenceSheet> {
 
                   final file = await _chooseAudioSource(context);
                   if (file == null) return;
-
-                  await _saveEncryptedEvidence(
+                  await _encryptAndUploadEvidence(
                     sourceFile: file,
                     type: EvidenceType.audio,
                   );
@@ -299,7 +325,7 @@ class _AddEvidenceSheetState extends State<AddEvidenceSheet> {
                   );
                   if (result?.files.single.path == null) return;
 
-                  await _saveEncryptedEvidence(
+                  await _encryptAndUploadEvidence(
                     sourceFile: File(result!.files.single.path!),
                     type: EvidenceType.video,
                   );
