@@ -7,6 +7,7 @@ import 'package:flutter_callkit_incoming/entities/ios_params.dart';
 import 'package:silentvoice/fake_call/fake_call_prefs.dart';
 
 class CallKitHelper {
+  static Timer? _pendingFakeCallTimer;
   static Future<void> showIncomingCall() async {
     final String callId =
         DateTime.now().millisecondsSinceEpoch.toString() +
@@ -45,9 +46,17 @@ class CallKitHelper {
   static Future<void> triggerFakeCallWithDelay() async {
     final int delaySeconds = await FakeCallPrefs.getFakeCallDelay();
 
-    Timer(Duration(seconds: delaySeconds), () {
+    _pendingFakeCallTimer?.cancel();
+
+    _pendingFakeCallTimer = Timer(Duration(seconds: delaySeconds), () {
       showIncomingCall();
+      _pendingFakeCallTimer = null;
     });
+  }
+
+  static void cancelPendingFakeCall() {
+    _pendingFakeCallTimer?.cancel();
+    _pendingFakeCallTimer = null;
   }
 
   static Future<void> endAllCalls() async {

@@ -163,6 +163,19 @@ class _HiddenDashboardScreenState extends State<HiddenDashboardScreen> {
                     ],
                     onTap: () {
                       CallKitHelper.triggerFakeCallWithDelay();
+
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: const Text('Fake call scheduled'),
+                          action: SnackBarAction(
+                            label: 'CANCEL',
+                            onPressed: () {
+                              CallKitHelper.cancelPendingFakeCall();
+                            },
+                          ),
+                          duration: const Duration(seconds: 10),
+                        ),
+                      );
                     },
                   ),
                 ],
