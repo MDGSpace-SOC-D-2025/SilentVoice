@@ -3,6 +3,7 @@ import 'package:flutter_callkit_incoming/entities/android_params.dart';
 import 'package:flutter_callkit_incoming/entities/call_kit_params.dart';
 import 'package:flutter_callkit_incoming/flutter_callkit_incoming.dart';
 import 'package:flutter_callkit_incoming/entities/ios_params.dart';
+import 'package:silentvoice/fake_call/fake_call_prefs.dart';
 
 class CallKitHelper {
   static Future<void> showIncomingCall() async {
@@ -10,11 +11,14 @@ class CallKitHelper {
         DateTime.now().millisecondsSinceEpoch.toString() +
         Random().nextInt(9999).toString();
 
+    final String callerName = await FakeCallPrefs.getCallerName();
+    final String callerNumber = await FakeCallPrefs.getCallerNumber();
+
     final CallKitParams params = CallKitParams(
       id: callId,
-      nameCaller: 'Mom',
-      appName: 'SilentVoice',
-      handle: 'Mom_Call',
+      nameCaller: callerName,
+      appName: 'Phone',
+      handle: callerNumber,
       type: 0,
       duration: 30000,
       textAccept: 'Accept',
