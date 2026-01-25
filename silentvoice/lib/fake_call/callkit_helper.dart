@@ -1,4 +1,5 @@
 import 'dart:math';
+import 'dart:async';
 import 'package:flutter_callkit_incoming/entities/android_params.dart';
 import 'package:flutter_callkit_incoming/entities/call_kit_params.dart';
 import 'package:flutter_callkit_incoming/flutter_callkit_incoming.dart';
@@ -39,6 +40,14 @@ class CallKitHelper {
     );
 
     await FlutterCallkitIncoming.showCallkitIncoming(params);
+  }
+
+  static Future<void> triggerFakeCallWithDelay() async {
+    final int delaySeconds = await FakeCallPrefs.getFakeCallDelay();
+
+    Timer(Duration(seconds: delaySeconds), () {
+      showIncomingCall();
+    });
   }
 
   static Future<void> endAllCalls() async {

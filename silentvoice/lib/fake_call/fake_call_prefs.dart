@@ -24,4 +24,16 @@ class FakeCallPrefs {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setString(_callerNumberKey, number);
   }
+
+  static const _fakeCallDelayKey = 'fake_call_delay_seconds';
+
+  static Future<int> getFakeCallDelay() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getInt(_fakeCallDelayKey) ?? 10; // default 10 sec
+  }
+
+  static Future<void> setFakeCallDelay(int seconds) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setInt(_fakeCallDelayKey, seconds);
+  }
 }

@@ -12,7 +12,7 @@ class _FakeCallSettingsScreenState extends State<FakeCallSettingsScreen> {
   final TextEditingController _controller = TextEditingController();
   final TextEditingController _numberController = TextEditingController();
   bool _loading = true;
-
+  int _delaySeconds = 10;
   @override
   void initState() {
     super.initState();
@@ -22,10 +22,10 @@ class _FakeCallSettingsScreenState extends State<FakeCallSettingsScreen> {
   Future<void> _loadCallerName() async {
     final name = await FakeCallPrefs.getCallerName();
     final number = await FakeCallPrefs.getCallerNumber();
-
+    final delay = await FakeCallPrefs.getFakeCallDelay();
     _controller.text = name;
     _numberController.text = number;
-
+    _delaySeconds = delay;
     setState(() => _loading = false);
   }
 
@@ -37,11 +37,12 @@ class _FakeCallSettingsScreenState extends State<FakeCallSettingsScreen> {
 
     await FakeCallPrefs.setCallerName(name);
     await FakeCallPrefs.setCallerNumber(number.isEmpty ? 'Unknown' : number);
+    await FakeCallPrefs.setFakeCallDelay(_delaySeconds);
 
     if (!mounted) return;
     ScaffoldMessenger.of(
       context,
-    ).showSnackBar(const SnackBar(content: Text('Fake call details saved')));
+    ).showSnackBar(const SnackBar(content: Text('Fake call settings saved')));
   }
 
   @override
@@ -80,6 +81,49 @@ class _FakeCallSettingsScreenState extends State<FakeCallSettingsScreen> {
                       hintText: 'e.g. +91 98XXXXXXX',
                       border: OutlineInputBorder(),
                     ),
+                  ),
+                  const SizedBox(height: 16),
+                  const Text(
+                    'Fake Call Delay',
+                    style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500),
+                  ),
+                  const SizedBox(height: 8),
+                  DropdownButtonFormField<int>(
+                    initialValue: _delaySeconds,
+                    decoration: const InputDecoration(
+                      border: OutlineInputBorder(),
+                    ),
+                    items: const [
+                      DropdownMenuItem(
+                        value: 10,
+                        child: Text('After 10 seconds'),
+                      ),
+                      DropdownMenuItem(
+                        value: 30,
+                        child: Text('After 30 seconds'),
+                      ),
+                      DropdownMenuItem(
+                        value: 60,
+                        child: Text('After 1 minute'),
+                      ),
+                      DropdownMenuItem(
+                        value: 120,
+                        child: Text('After 2 minutes'),
+                      ),
+                      DropdownMenuItem(
+                        value: 300,
+                        child: Text('After 5 minutes'),
+                      ),
+                      DropdownMenuItem(
+                        value: 600,
+                        child: Text('After 10 minutes'),
+                      ),
+                    ],
+                    onChanged: (value) {
+                      if (value != null) {
+                        setState(() => _delaySeconds = value);
+                      }
+                    },
                   ),
                   const SizedBox(height: 20),
                   SizedBox(

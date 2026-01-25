@@ -162,7 +162,7 @@ class _HiddenDashboardScreenState extends State<HiddenDashboardScreen> {
                       Color.fromARGB(255, 144, 164, 174),
                     ],
                     onTap: () {
-                      CallKitHelper.showIncomingCall();
+                      CallKitHelper.triggerFakeCallWithDelay();
                     },
                   ),
                 ],
