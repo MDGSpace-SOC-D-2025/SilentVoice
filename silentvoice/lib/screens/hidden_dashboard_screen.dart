@@ -1,14 +1,53 @@
 import 'package:flutter/material.dart';
+
+import 'package:flutter_callkit_incoming/entities/entities.dart';
+import 'package:flutter_callkit_incoming/flutter_callkit_incoming.dart';
+import 'package:silentvoice/fake_call/fake_call_in_progress_screen.dart';
+
 import 'package:silentvoice/anonymous_chat/screens/start_chat_screen.dart';
 import 'package:silentvoice/emergency_sos/screens/emergency_sos_screen.dart';
 import 'package:silentvoice/evidence_vault/screens/vault_lock_screen.dart';
+import 'package:silentvoice/fake_call/callkit_helper.dart';
 import 'package:silentvoice/nearby_help_map/screens/nearby_help_screen.dart';
 import 'package:silentvoice/screens/settings_screen.dart';
 import 'calculator_screen.dart';
 import 'know_your_rights_main.dart';
 
-class HiddenDashboardScreen extends StatelessWidget {
+class HiddenDashboardScreen extends StatefulWidget {
   const HiddenDashboardScreen({super.key});
+
+  @override
+  State<HiddenDashboardScreen> createState() => _HiddenDashboardScreenState();
+}
+
+class _HiddenDashboardScreenState extends State<HiddenDashboardScreen> {
+  @override
+  void initState() {
+    super.initState();
+    listenToCallEvents();
+  }
+
+  void listenToCallEvents() {
+    FlutterCallkitIncoming.onEvent.listen((event) {
+      if (event == null) return;
+
+      switch (event.event) {
+        case Event.actionCallAccept:
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (_) => const FakeCallInProgressScreen()),
+          );
+          break;
+
+        case Event.actionCallDecline:
+          CallKitHelper.endAllCalls();
+          break;
+
+        default:
+          break;
+      }
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -21,7 +60,6 @@ class HiddenDashboardScreen extends StatelessWidget {
               child: Row(
                 children: [
                   const Spacer(),
-
                   IconButton(
                     icon: const Icon(Icons.settings, size: 32),
                     onPressed: () {
@@ -31,8 +69,7 @@ class HiddenDashboardScreen extends StatelessWidget {
                       );
                     },
                   ),
-                  SizedBox(width: 2),
-
+                  const SizedBox(width: 2),
                   IconButton(
                     icon: const Icon(Icons.calculate_outlined, size: 32),
                     onPressed: () {
@@ -89,7 +126,6 @@ class HiddenDashboardScreen extends StatelessWidget {
                     },
                   ),
                   const SizedBox(height: 24),
-
                   DashboardPillButton(
                     title: 'Nearby Help Map',
                     icon: Icons.location_on_outlined,
@@ -104,7 +140,6 @@ class HiddenDashboardScreen extends StatelessWidget {
                     },
                   ),
                   const SizedBox(height: 24),
-
                   DashboardPillButton(
                     title: 'Know Your Rights',
                     icon: Icons.menu_book_outlined,
@@ -122,8 +157,13 @@ class HiddenDashboardScreen extends StatelessWidget {
                   DashboardPillButton(
                     title: 'Incoming Call',
                     icon: Icons.call,
-                    gradient: const [Color(0xFF607D8B), Color(0xFF90A4AE)],
-                    onTap: () {},
+                    gradient: const [
+                      Color.fromARGB(255, 96, 125, 139),
+                      Color.fromARGB(255, 144, 164, 174),
+                    ],
+                    onTap: () {
+                      CallKitHelper.showIncomingCall();
+                    },
                   ),
                 ],
               ),
