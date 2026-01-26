@@ -29,7 +29,7 @@ class FakeCallPrefs {
 
   static Future<int> getFakeCallDelay() async {
     final prefs = await SharedPreferences.getInstance();
-    return prefs.getInt(_fakeCallDelayKey) ?? 10; // default 10 sec
+    return prefs.getInt(_fakeCallDelayKey) ?? 10;
   }
 
   static Future<void> setFakeCallDelay(int seconds) async {

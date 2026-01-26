@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:silentvoice/fake_call/fake_call_prefs.dart';
+import 'package:silentvoice/widgets/quick_exit_appbar_action.dart';
 
 class FakeCallSettingsScreen extends StatefulWidget {
   const FakeCallSettingsScreen({super.key});
@@ -48,7 +49,10 @@ class _FakeCallSettingsScreenState extends State<FakeCallSettingsScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Fake Call Settings')),
+      appBar: AppBar(
+        title: const Text('Fake Call Settings'),
+        actions: [QuickExitButton()],
+      ),
       body: _loading
           ? const Center(child: CircularProgressIndicator())
           : Padding(

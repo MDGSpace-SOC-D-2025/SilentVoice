@@ -1,5 +1,5 @@
 name: silentvoice
-description: "A new Flutter project."
+description: "A disguised safety app."
 # The following line prevents the package from being accidentally published to
 # pub.dev using `flutter pub publish`. This is preferred for private packages.
 publish_to: 'none' # Remove this line if you wish to publish to pub.dev
@@ -35,7 +35,6 @@ dependencies:
   # The following adds the Cupertino Icons font to your application.
   # Use with the CupertinoIcons class for iOS style icons.
   shared_preferences: ^2.2.2
-  google_fonts: ^6.1.0
   file_picker: ^8.0.0
   crypto: ^3.0.3
   pointycastle: ^3.7.3
@@ -57,6 +56,7 @@ dependencies:
   encrypt: ^5.0.3
   vibration: ^3.1.5
   flutter_callkit_incoming: ^3.0.0
+  flutter_launcher_icons: ^0.14.4
 
 dev_dependencies:
   flutter_test:
@@ -73,12 +73,24 @@ dev_dependencies:
 # following page: https://dart.dev/tools/pub/pubspec
 
 # The following section is specific to Flutter packages.
+flutter_launcher_icons:
+  android: true
+  ios: true
+  image_path: "assets/icons/calculator.png"
+  adaptive_icon_background: "#ECECEC"
+  adaptive_icon_foreground: "assets/icons/calculator.png"
+
+  remove_alpha_ios: true
 flutter:
 
   # The following line ensures that the Material Icons font is
   # included with your application, so that you can use the icons in
   # the material Icons class.
   uses-material-design: true
+  fonts:
+    - family: Allura
+      fonts:
+        - asset: assets/fonts/Allura-Regular.ttf
   assets:
     - assets/rights_content.json   
 

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:silentvoice/emergency_sos/screens/trusted_contacts_screen.dart';
+import 'package:silentvoice/widgets/quick_exit_appbar_action.dart';
 import '../services/sos_service.dart';
 
 class EmergencySosScreen extends StatefulWidget {
@@ -139,7 +140,10 @@ class _EmergencySosScreenState extends State<EmergencySosScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Emergency SOS')),
+      appBar: AppBar(
+        title: const Text('Emergency SOS'),
+        actions: [QuickExitButton()],
+      ),
       body: Center(
         child: ElevatedButton(
           style: ElevatedButton.styleFrom(

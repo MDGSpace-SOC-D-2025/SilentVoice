@@ -2,6 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:silentvoice/anonymous_chat/screens/user_chat_screen.dart';
+import 'package:silentvoice/widgets/quick_exit_appbar_action.dart';
 
 class StartChatScreen extends StatelessWidget {
   const StartChatScreen({super.key});
@@ -37,7 +38,10 @@ class StartChatScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Anonymous Chat')),
+      appBar: AppBar(
+        title: const Text('Anonymous Chat'),
+        actions: [QuickExitButton()],
+      ),
       body: Center(
         child: ElevatedButton(
           child: const Text('Start Chat'),
@@ -58,7 +62,7 @@ class StartChatScreen extends StatelessWidget {
               await FirebaseFirestore.instance.collection('chat_requests').add({
                 'userId': userId,
                 'status': 'waiting',
-                'retentionDays': retentionDays, // 🔑 IMPORTANT
+                'retentionDays': retentionDays,
                 'createdAt': FieldValue.serverTimestamp(),
               });
             }

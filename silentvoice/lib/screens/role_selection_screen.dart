@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:silentvoice/screens/helper_login_screen.dart';
 import 'package:silentvoice/screens/user_pin_screen.dart';
 
@@ -40,7 +39,8 @@ class _RoleSelectionScreenState extends State<RoleSelectionScreen> {
                 Center(
                   child: Text(
                     'Welcome',
-                    style: GoogleFonts.allura(
+                    style: const TextStyle(
+                      fontFamily: 'Allura',
                       fontSize: 90,
                       fontWeight: FontWeight.w400,
                     ),
@@ -50,9 +50,10 @@ class _RoleSelectionScreenState extends State<RoleSelectionScreen> {
 
                 Text(
                   'Continue as',
-                  style: GoogleFonts.allura(
+                  style: const TextStyle(
+                    fontFamily: 'Allura',
                     fontSize: 50,
-                    color: const Color.fromARGB(255, 116, 115, 115),
+                    color: Color.fromARGB(255, 116, 115, 115),
                   ),
                 ),
                 const SizedBox(height: 20),

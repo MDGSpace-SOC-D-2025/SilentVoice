@@ -16,10 +16,13 @@ class AppLifecycleHandler with WidgetsBindingObserver {
 
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
-    if (state == AppLifecycleState.paused ||
-        state == AppLifecycleState.inactive) {
-      if (AppLockController.allowBackground) return;
+    if (AppLockController.allowBackground) return;
 
+    if (state == AppLifecycleState.inactive) {
+      return;
+    }
+
+    if (state == AppLifecycleState.paused) {
       _lockApp();
     }
   }

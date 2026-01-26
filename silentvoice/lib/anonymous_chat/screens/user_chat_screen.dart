@@ -3,6 +3,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:silentvoice/anonymous_chat/services/message_service.dart';
 import 'package:silentvoice/anonymous_chat/services/chat_encryption_service.dart';
+import 'package:silentvoice/widgets/quick_exit_appbar_action.dart';
 
 class UserChatScreen extends StatefulWidget {
   const UserChatScreen({super.key});
@@ -204,6 +205,10 @@ class _UserChatScreenState extends State<UserChatScreen>
                 }
               },
             ),
+
+            QuickExitButton(),
+
+            const SizedBox(width: 8),
           ],
         ),
         body: Column(
