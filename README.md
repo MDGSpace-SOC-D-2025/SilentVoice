@@ -23,7 +23,7 @@ The core philosophy of SilentVoice is privacy, discretion, and reliability. All 
 - Supports separate roles: **User** and **Helper**
 - On first launch, users can enable App Lock using the **three-dot menu (⋮) on the top-left**, which safely guides them through the initial secure setup
 
-![Calculator Home](assets/screenshots/calculator.jpeg)
+![Calculator Home](assets/screenshots/calculator..jpeg)
 
 
 ### 🕶️ Hidden Safety Features (Disguised & Context-Aware)
