@@ -93,7 +93,7 @@ The core philosophy of SilentVoice is privacy, discretion, and reliability. All 
 - Guided permission and setup handling
 
 <p align="center">
-  <img src="silentvoice/assets/screenshots/sos_sms.jpeg" width="300"/>
+  <img src="silentvoice/assets/screenshots/sos_sent.jpeg" width="300"/>
 </p>
 
 <p align="center">
@@ -109,7 +109,7 @@ The core philosophy of SilentVoice is privacy, discretion, and reliability. All 
 </p>
 
 <p align="center">
-  <img src="silentvoice/assets/screenshots/no_contacts.jpeg" width="300"/>
+  <img src="silentvoice/assets/screenshots/warning.jpeg" width="300"/>
 </p>
 
 <p align="center">
@@ -139,7 +139,7 @@ The core philosophy of SilentVoice is privacy, discretion, and reliability. All 
 - Supports immediate physical assistance discovery
 
 <p align="center">
-  <img src="silentvoice/assets/screenshots/nearby_help.jpeg" width="300"/>
+  <img src="silentvoice/assets/screenshots/nearby_help_map.jpeg" width="300"/>
 </p>
 
 <p align="center">
@@ -162,7 +162,7 @@ The core philosophy of SilentVoice is privacy, discretion, and reliability. All 
 - Designed to help users safely exit unsafe situations
 
 <p align="center">
-  <img src="silentvoice/assets/screenshots/fake_call_settings.jpeg" width="300"/>
+  <img src="silentvoice/assets/screenshots/call_settings.jpeg" width="300"/>
 </p>
 
 <p align="center">
