@@ -168,6 +168,7 @@ The core philosophy of SilentVoice is privacy, discretion, and reliability. All 
 <p align="center">
   <i>Fake call configuration screen where users can customize caller details and delay to trigger a realistic incoming call.</i>
 </p>
+
 ---
 
 ## 4. Tech Stack
@@ -197,16 +198,16 @@ The core philosophy of SilentVoice is privacy, discretion, and reliability. All 
 - Firebase project setup
 
 ### Steps
-# Clone repository
+### Clone repository
 git clone https://github.com/MDGSpace-SOC-D-2025/SilentVoice.git
 
-# Navigate to project directory
+### Navigate to project directory
 cd silentvoice
 
-# Install dependencies
+### Install dependencies
 flutter pub get
 
-# Run the app
+### Run the app
 flutter run
 
 ---
@@ -253,25 +254,26 @@ Google Maps API keys are configured at the platform level and restricted by appl
 
 ---
 
-## 9. Project Structure
+## 8. Project Structure
 
+```text
 lib/
-├── anonymous_chat/ # Anonymous user-helper chat system
-├── auth/ # Authentication logic
-├── emergency_sos/ # SOS & trusted contacts
-├── evidence_vault/ # Encrypted evidence storage
-├── fake_call/ # Fake incoming call feature
-├── nearby_help_map/ # Police & hospital locator
-├── navigation/ # navigation handling
-├── security/ # Encryption, hashing, lifecycle lock
-├── screens/ # Core UI screens
-├── widgets/ # Reusable UI components
-├── firebase_options.dart
-└── main.dart
-
+├── anonymous_chat/         # Anonymous user-helper chat system
+├── auth/                   # Authentication logic
+├── emergency_sos/          # SOS & trusted contacts
+├── evidence_vault/         # Encrypted evidence storage
+├── fake_call/              # Fake incoming call feature
+├── nearby_help_map/        # Police & hospital locator
+├── navigation/             # App navigation handling
+├── screens/                # Core UI screens
+├── security/               # Encryption, hashing, lifecycle lock
+├── widgets/                # Reusable UI components
+├── firebase_options.dart   # Firebase configuration
+└── main.dart               # Application entry point
+```
 ---
 
-## 10. Roadmap
+## 9. Roadmap
 
 Planned future improvements:
 - Biometric authentication (fingerprint / face unlock)
@@ -282,7 +284,7 @@ Planned future improvements:
 
 ---
 
-## 11. Known Issues
+## 10. Known Issues
 
 - Emergency SOS functionality depends on SMS availability and the device’s default messaging app.
 - Location sharing accuracy depends on GPS availability and user-granted permissions.
