@@ -23,7 +23,13 @@ The core philosophy of SilentVoice is privacy, discretion, and reliability. All 
 - Supports separate roles: **User** and **Helper**
 - On first launch, users can enable App Lock using the **three-dot menu (⋮) on the top-left**, which safely guides them through the initial secure setup
 
-![Calculator Home](silentvoice/assets/screenshots/calculator..jpeg)
+<p align="center">
+  <img src="silentvoice/assets/screenshots/calculator..jpeg" width="300"/>
+</p>
+
+<p align="center">
+  <i>Fully functional calculator interface used as a disguise. All safety features remain hidden during normal calculator usage.</i>
+</p>
 
 
 ### 🕶️ Hidden Safety Features (Disguised & Context-Aware)
@@ -34,7 +40,13 @@ The core philosophy of SilentVoice is privacy, discretion, and reliability. All 
 - App automatically returns to calculator mode when backgrounded
 - **Quick Exit** is available across all sensitive screens
 
-![Hidden Features](silentvoice/assets/screenshots/hidden.jpeg)
+<p align="center">
+  <img src="silentvoice/assets/screenshots/hidden.jpeg" width="300"/>
+</p>
+
+<p align="center">
+  <i>Hidden safety dashboard that appears only after correct PIN entry, ensuring discretion and privacy.</i>
+</p>
 
 ### 🔐 App Lock & Security
 
@@ -42,8 +54,21 @@ The core philosophy of SilentVoice is privacy, discretion, and reliability. All 
 - Secure PIN hashing with salts
 - Automatic app locking on background or interruption
 
-![Set PIN](silentvoice/assets/screenshots/pin_setup.jpeg)
-![Helper Login](silentvoice/assets/screenshots/helpers_login.jpeg)
+<p align="center">
+  <img src="silentvoice/assets/screenshots/pin_setup.jpeg" width="300"/>
+</p>
+
+<p align="center">
+  <i>Secure PIN setup used to protect all sensitive features. If forgotten, data cannot be recovered.</i>
+</p>
+
+<p align="center">
+  <img src="silentvoice/assets/screenshots/helpers_login.jpeg" width="300"/>
+</p>
+
+<p align="center">
+  <i>Authorized helpers can securely log in to assist users through anonymous chat.</i>
+</p>
 
 ### 💬 Anonymous Chat System
 
@@ -51,7 +76,13 @@ The core philosophy of SilentVoice is privacy, discretion, and reliability. All 
 - Helper availability and request queue system
 - End-to-end encrypted messages
 
-![Chat Screen](silentvoice/assets/screenshots/anonymous_chat.jpeg)
+<p align="center">
+  <img src="silentvoice/assets/screenshots/anonymous_chat.jpeg" width="300"/>
+</p>
+
+<p align="center">
+  <i>End-to-end encrypted anonymous chat system connecting users with verified helpers.</i>
+</p>
 
 ### 🚨 Emergency SOS
 
@@ -61,9 +92,29 @@ The core philosophy of SilentVoice is privacy, discretion, and reliability. All 
 - Works without internet connectivity
 - Guided permission and setup handling
 
-![SOS Screen](silentvoice/assets/screenshots/sos_sent.jpeg)
-![Trusted Contacts](silentvoice/assets/screenshots/trusted_contacts.jpeg)
-![SOS Fisrt Time Screen](silentvoice/assets/screenshots/warning.jpeg)
+<p align="center">
+  <img src="silentvoice/assets/screenshots/sos_sms.jpeg" width="300"/>
+</p>
+
+<p align="center">
+  <i>One-tap SOS sends an emergency SMS with live Google Maps location to trusted contacts.</i>
+</p>
+
+<p align="center">
+  <img src="silentvoice/assets/screenshots/trusted_contacts.jpeg" width="300"/>
+</p>
+
+<p align="center">
+  <i>Users can add up to five trusted contacts who will receive emergency alerts.</i>
+</p>
+
+<p align="center">
+  <img src="silentvoice/assets/screenshots/no_contacts.jpeg" width="300"/>
+</p>
+
+<p align="center">
+  <i>Clear guidance shown when trusted contacts are missing or permissions are denied.</i>
+</p>
 
 ### 🗂️ Evidence Vault
 
@@ -73,7 +124,13 @@ The core philosophy of SilentVoice is privacy, discretion, and reliability. All 
 - On-device decryption for viewing
 - Automatic cleanup of decrypted temporary files
 
-![Evidence Vault](silentvoice/assets/screenshots/evidence_vault.jpeg)
+<p align="center">
+  <img src="silentvoice/assets/screenshots/evidence_vault.jpeg" width="300"/>
+</p>
+
+<p align="center">
+  <i>Encrypted evidence vault for securely storing images, audio, and videos.</i>
+</p>
 
 ### 📍 Nearby Help Map
 
@@ -81,8 +138,21 @@ The core philosophy of SilentVoice is privacy, discretion, and reliability. All 
 - Map-based navigation for quick access to help
 - Supports immediate physical assistance discovery
 
-![Nearby Help Map](silentvoice/assets/screenshots/nearby_help_map.jpeg)
-![Nearby Help Map](silentvoice/assets/screenshots/get_directions.jpeg)
+<p align="center">
+  <img src="silentvoice/assets/screenshots/nearby_help.jpeg" width="300"/>
+</p>
+
+<p align="center">
+  <i>Displays nearby police stations and hospitals using Google Maps for quick assistance.</i>
+</p>
+
+<p align="center">
+  <img src="silentvoice/assets/screenshots/get_directions.jpeg" width="300"/>
+</p>
+
+<p align="center">
+  <i>Nearby Help Map showing hospitals and police stations around the user’s current location, with quick access to directions.</i>
+</p>
 
 ### 📞 Fake Incoming Call
 
@@ -91,8 +161,13 @@ The core philosophy of SilentVoice is privacy, discretion, and reliability. All 
 - Custom delay before the call rings
 - Designed to help users safely exit unsafe situations
 
-![Call Settings](silentvoice/assets/screenshots/call_settings.jpeg)
+<p align="center">
+  <img src="silentvoice/assets/screenshots/fake_call_settings.jpeg" width="300"/>
+</p>
 
+<p align="center">
+  <i>Fake call configuration screen where users can customize caller details and delay to trigger a realistic incoming call.</i>
+</p>
 ---
 
 ## 4. Tech Stack
