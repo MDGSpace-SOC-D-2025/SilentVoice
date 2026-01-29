@@ -1,16 +1,224 @@
-# silentvoice
+## 1. Project Title
 
-A new Flutter project.
+**SilentVoice – A Safety-First Disguised Support Application**
 
-## Getting Started
+---
 
-This project is a starting point for a Flutter application.
 
-A few resources to get you started if this is your first Flutter project:
+## 2. Description / Overview
 
-- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
+SilentVoice is a mobile safety application designed to help individuals facing domestic abuse or unsafe situations seek help discreetly. The app is intentionally disguised as a calculator to avoid suspicion, while providing powerful hidden features such as anonymous chat with verified helpers, an emergency SOS system, nearby help map, and a secure Evidence Vault.
 
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+The core philosophy of SilentVoice is privacy, discretion, and reliability. All sensitive actions are hidden behind secure flows, encryption, and minimal user interaction, ensuring safety even under surveillance or low-connectivity conditions.
+
+---
+
+## 3. Features
+
+### 🔢 Disguised Calculator Interface
+
+- **Fully functional calculator** with standard arithmetic operations
+- Acts as the app’s primary entry point and realistic disguise
+- Unlocks hidden dashboards via PIN-based authentication
+- Supports separate roles: **User** and **Helper**
+- On first launch, users can enable App Lock using the **three-dot menu (⋮) on the top-left**, which safely guides them through the initial secure setup
+
+![Calculator Home](assets/screenshots/calculator.jpeg)
+
+
+### 🕶️ Hidden Safety Features (Disguised & Context-Aware)
+
+- All safety features remain **completely hidden** during normal calculator use
+- No sensitive UI is visible unless App Lock is enabled
+- Hidden dashboards unlock only after correct PIN entry
+- App automatically returns to calculator mode when backgrounded
+- **Quick Exit** is available across all sensitive screens
+
+![Hidden Features](assets/screenshots/hidden.jpeg)
+
+### 🔐 App Lock & Security
+
+- PIN-based access for users and helpers
+- Secure PIN hashing with salts
+- Automatic app locking on background or interruption
+
+![Set PIN](assets/screenshots/pin_setup.jpeg)
+![Helper Login](assets/screenshots/helpers_login.jpeg)
+
+### 💬 Anonymous Chat System
+
+- Real-time anonymous chat between users and helpers
+- Helper availability and request queue system
+- End-to-end encrypted messages
+
+![Chat Screen](assets/screenshots/anonymous_chat.jpeg)
+
+### 🚨 Emergency SOS
+
+- One-tap SOS trigger with haptic feedback
+- Sends SMS alerts to trusted contacts
+- Includes live Google Maps location link
+- Works without internet connectivity
+- Guided permission and setup handling
+
+![SOS Screen](assets/screenshots/sos_sent.jpeg)
+![Trusted Contacts](assets/screenshots/trusted_contacts.jpeg)
+![SOS Fisrt Time Screen](assets/screenshots/warning.jpeg)
+
+### 🗂️ Evidence Vault
+
+- Secure storage for images, audio, and videos
+- Local AES encryption before upload
+- Cloud stores **only encrypted files**
+- On-device decryption for viewing
+- Automatic cleanup of decrypted temporary files
+
+![Evidence Vault](assets/screenshots/evidence_vault.jpeg)
+
+### 📍 Nearby Help Map
+
+- Displays nearby **police stations and hospitals**
+- Map-based navigation for quick access to help
+- Supports immediate physical assistance discovery
+
+![Nearby Help Map](assets/screenshots/nearby_help_map.jpeg)
+![Nearby Help Map](assets/screenshots/get_directions.jpeg)
+
+### 📞 Fake Incoming Call
+
+- Simulates a realistic incoming phone call
+- User-configurable caller name
+- Custom delay before the call rings
+- Designed to help users safely exit unsafe situations
+
+![Call Settings](assets/screenshots/call_settings.jpeg)
+
+---
+
+## 4. Tech Stack
+
+### Frontend
+- Flutter (Dart)
+
+### Backend & Services
+- Firebase Authentication (Anonymous for users + Email and password for helpers)
+- Cloud Firestore (chat & metadata)
+- Firebase Storage (encrypted evidence files)
+
+### Security & Utilities
+- AES Encryption
+- PBKDF2 Key Derivation
+- SharedPreferences (local secure storage)
+- Geolocator (location services)
+- URL Launcher (SMS handling)
+
+---
+
+## 5. Installation
+
+### Prerequisites
+- Flutter SDK installed
+- Android Studio / VS Code
+- Firebase project setup
+
+### Steps
+# Clone repository
+git clone https://github.com/MDGSpace-SOC-D-2025/SilentVoice.git
+
+# Navigate to project directory
+cd silentvoice
+
+# Install dependencies
+flutter pub get
+
+# Run the app
+flutter run
+
+---
+
+## 6. Usage
+
+1. Launch the app, it opens as a **fully functional calculator**.
+2. Open the **three-dot menu (⋮) on the top-left** on first use.
+3. Enable **App Lock** and choose a role:
+   - **User** (person seeking help)
+   - **Helper** (authorized support person)
+4. Set a secure PIN.
+5. Use the calculator normally, no suspicious UI is visible.
+6. Enter the correct PIN through the calculator to unlock hidden features.
+
+### User Capabilities
+- Start anonymous chat with helpers
+- Trigger Emergency SOS
+- Store encrypted evidence (images, audio, video)
+- View nearby police stations and hospitals
+- Trigger fake incoming calls to exit unsafe situations
+
+### Helper Capabilities
+- Log in using email/password
+- Accept anonymous chat requests
+- Assist users in real time
+
+---
+
+## 7. Configuration / Environment Variables
+
+SilentVoice uses **Firebase** for backend services.
+
+Configuration is handled via:
+- `firebase_options.dart` (auto-generated using FlutterFire CLI)
+
+Required Firebase services:
+- Firebase Authentication
+- Cloud Firestore
+- Firebase Storage
+
+No manual environment variables are required.
+Google Maps API keys are configured at the platform level and restricted by application identifiers as per Google’s recommended practices.
+
+---
+
+## 9. Project Structure
+
+lib/
+├── anonymous_chat/ # Anonymous user-helper chat system
+├── auth/ # Authentication logic
+├── emergency_sos/ # SOS & trusted contacts
+├── evidence_vault/ # Encrypted evidence storage
+├── fake_call/ # Fake incoming call feature
+├── nearby_help_map/ # Police & hospital locator
+├── navigation/ # navigation handling
+├── security/ # Encryption, hashing, lifecycle lock
+├── screens/ # Core UI screens
+├── widgets/ # Reusable UI components
+├── firebase_options.dart
+└── main.dart
+
+---
+
+## 10. Roadmap
+
+Planned future improvements:
+- Biometric authentication (fingerprint / face unlock)
+- Multi-language support
+- Verified helper badges (NGOs, counselors, volunteers).
+- Text-to-voice+ voice-to-text for users who can’t type safely.
+- AI-based threat detection
+
+---
+
+## 11. Known Issues
+
+- Emergency SOS functionality depends on SMS availability and the device’s default messaging app.
+- Location sharing accuracy depends on GPS availability and user-granted permissions.
+- Network-dependent features such as anonymous chat require a stable internet connection.
+- App behavior when running in the background may vary slightly across different Android devices.
+
+---
+
+## ⚠️ Disclaimer
+
+SilentVoice is a **support tool**, not a complete replacement for emergency services.  
+In immediate danger, users should contact local emergency authorities.
+
+### Built with empathy, privacy, and safety at its core.
